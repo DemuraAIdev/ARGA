@@ -1,0 +1,130 @@
+{
+  "name": "Prison Break",
+  "author": "Abdul Vaiz",
+  "version": "1.0.0",
+  "start": "CellPrison",
+  "config": {
+
+  },
+  "inventory": [],
+  "finishmessage": "You escaped the prison. Congratulations!",
+  "location": {
+    "CellPrison": {
+      "name": "CellPrison",
+      "description": "You are in a prison cell. There is a bed and a desk. There is a door.",
+      "items": ["bed", "desk", "door_cell"]
+    },
+    "Corridor": {
+      "name": "Corridor",
+      "description": "You are in a corridor. There is a door.",
+      "items": ["door_corr", "door_cell"]
+    }
+  },
+  "item": {
+    "bed": {
+      "name": "bed",
+      "description": "A bed. It looks comfortable.",
+      "canTake": {
+        "take": false,
+        "message": "You can't take the bed."
+      },
+      "canSearch": {
+        "search": false,
+        "message": "You can't search the bed. but you can sleep on it (coming soon)."
+      }
+    },
+    "desk": {
+      "name": "desk",
+      "description": "A desk. It has a drawer.",
+      "canSearch": {
+        "search": {
+          "items": ["drawer"],
+          "message": "You search the desk. You find a drawer."
+        },
+        "message": "You search the desk. You find a drawer."
+      }
+    },
+    "drawer": {
+      "canSearch": {
+        "search": false,
+        "message": "You can't search the drawer. but you can open it. (command: open drawer)"
+      },
+      "name": "drawer",
+      "description": "A drawer. It is closed.",
+      "canOpen": {
+        "open": true,
+        "message": "You open the drawer."
+      },
+      "canClose": {
+        "close": true,
+        "message": "You close the drawer."
+      },
+      "state": "closed",
+      "states": {
+        "open": {
+          "items": ["key"],
+          "message": "The drawer is open. There is a key inside. (command: take key)"
+        },
+        "closed": {
+          "message": "The drawer is closed."
+        }
+      }
+    },
+    "key": {
+      "name": "key",
+      "canTake": {
+        "take": true,
+        "message": "You take the key."
+      }
+    },
+    "door_corr": {
+      "name": "door_corr",
+      "description": "A door. It is locked.",
+      "canOpen": {
+        "open": false,
+        "message": "The door is locked."
+      },
+      "canEnter": {
+        "enter": true,
+        "message": "The door is locked."
+      },
+      "canUnlock": {
+        "unlock": true,
+        "message": "You unlock the door.",
+        "use": "key"
+      },
+      "state": "closed",
+      "states": {
+        "open": {
+          "message": "The door is open.",
+          "finish": true
+        }
+      }
+    },
+    "door_cell": {
+      "name": "door_cell",
+      "description": "A door. It is locked.",
+      "state": "closed",
+      "locationnext": "Corridor",
+      "locationbefore": "CellPrison",
+      "canOpen": {
+        "open": true,
+        "message": "You open the door."
+      },
+      "canEnter": {
+        "enter": "Corridor",
+        "message": "You enter the door.",
+        "locationbefore": "CellPrison"
+      },
+      "states": {
+        "open": {
+          "message": "The door is open."
+        },
+        "closed": {
+          "message": "The door is closed."
+        }
+      }
+    }
+  },
+  "CMDGAVER": "1.0.0"
+}
