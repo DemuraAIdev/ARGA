@@ -15,6 +15,7 @@ class GameEngine {
     this.location = null;
   }
   async loadGame(filename) {
+    console.log("Build Using ARGA GAME ENGINE")
     log("Loading game...", "fgGreen");
     await fs.readFile(filename, "utf8", (err, data) => {
       if (err) {
@@ -79,6 +80,12 @@ class GameEngine {
         break;
       case "quit":
         this.quit();
+        break;
+      case "save":
+        this.save();
+        break;
+      case "load":
+        this.load(args[0]);
         break;
       default:
         log("Unknown command", "fgRed");
@@ -341,6 +348,41 @@ class GameEngine {
       log(item.canEnter.message || `You can't enter ${itemName}.`, "fgRed");
     }
   }
+
+save() {
+    rl.question("Enter a name for the save: ", (saveName) => {
+        const savePath = `save/${saveName}.json`;
+        fs.writeFile(savePath, JSON.stringify(this), (err) => {
+            if (err) {
+                console.error(err);
+                return;
+            }
+            log(`Game saved as ${savePath}!`, "fgGreen");
+        });
+    });
+}
+
+load(saveName) {
+    const savePath = `save/${saveName}.json`;
+    fs.readFile(savePath, "utf8", (err, data) => {
+        if (err) {
+            console.error(err);
+            log("Save not found.", "fgRed");
+            return;
+        }
+        try {
+            const save = JSON.parse(data);
+            this.player.location = save.player.location;
+            this.player.inventory = save.player.inventory;
+            this.game = save.game;
+            this.location = save.location;
+            log("Game loaded!", "fgGreen");
+            this.look();
+        } catch (e) {
+            console.error(e);
+        }
+    });
+}
 
   help() {
     log("Welcome to the game.", "fgGreen");
