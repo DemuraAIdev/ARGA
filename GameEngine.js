@@ -105,7 +105,8 @@ class GameEngine {
     if (this.location.items && this.location.items.length > 0) {
       log("You see:", "fgGreen");
       for (let item of this.location.items) {
-        log("- " + this.game.item[item].name, "fgYellow");
+        const state = this.game.item[item].state ? ` (${this.game.item[item].state})` : ""  ;
+        log("- " + this.game.item[item].name + state, "fgYellow");
       }
     }
     // debug
@@ -284,6 +285,7 @@ class GameEngine {
 
     if (!tool) {
       if (this.player.hasItem(item.canUnlock.use)) {
+        log(`You unlock ${itemName} with ${item.canUnlock.use}`, "fgGreen");
         item.state = "open";
         item.canOpen.open = true;
         log(canUnlock.message, "fgGreen");
