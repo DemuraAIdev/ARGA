@@ -1,76 +1,417 @@
-const readline = require("readline");
-const log = require("./lib/Color");
+// // STRCUTRE OF GAME
+// {
+//     "name": "Prison Break",
+//     "author": "Abdul Vaiz",
+//     "version": "1.0.0",
+//     "start": "CellPrison",
+//     "description": "You are in a prison cell. You want to escape from the prison.",
+//     "config": {
+//       "debug": true,
+//       "allowedAction": [
+//         "take",
+//         "search",
+//         "open",
+//         "close",
+//         "enter",
+//         "unlock",
+//         "sleep"
+//       ]
+//     },
+//     "inventory": [],
+//     "finishmessage": "You escaped the prison. Congratulations!",
+//     "locations": [
+//       {
+//         "id": "CellPrison",
+//         "name": "Prison Cell",
+//         "description": "You are in a prison cell. There is a bed and a desk. There is a door.",
+//         "items": ["bed", "desk", "door_cell"]
+//       },
+//       {
+//         "id": "Corridor",
+//         "name": "Corridor",
+//         "description": "You are in a corridor. There is a door.",
+//         "items": ["door_corr", "door_cell", "guard"]
+//       }
+//     ],
+//     "item": [
+//       {
+//         "id": "bed",
+//         "name": "bed",
+//         "description": "A bed. It looks comfortable.",
+//         "canTake": {
+//           "take": false,
+//           "message": "You can't take the bed."
+//         },
+//         "canSearch": {
+//           "search": false,
+//           "message": "You can't search the bed. but you can sleep on it (coming soon)."
+//         },
+//         "canSleep": {
+//           "sleep": true,
+//           "message": "You sleep on the bed."
+//         },
+//         "event": "wakeup_midnight"
+//       },
+//       {
+//         "id": "desk",
+//         "name": "desk",
+//         "description": "A desk. It has a drawer.",
+//         "canSearch": {
+//           "search": {
+//             "items": ["drawer"],
+//             "message": "You search the desk. You find a drawer."
+//           },
+//           "message": "You search the desk. You find a drawer."
+//         }
+//       },
+//       {
+//         "id": "drawer",
+//         "canSearch": {
+//           "search": false,
+//           "message": "You can't search the drawer. but you can open it. (command: open drawer)"
+//         },
+//         "name": "drawer",
+//         "description": "A drawer. It is closed.",
+//         "canOpen": {
+//           "open": true,
+//           "message": "You open the drawer. You find a key"
+//         },
+//         "canClose": {
+//           "close": true,
+//           "message": "You close the drawer."
+//         },
+//         "state": "closed",
+//         "states": {
+//           "open": {
+//             "message": "The drawer is open. You find key.",
+//             "items": ["keycell"]
+//           },
+//           "closed": {
+//             "message": "The drawer is closed."
+//           }
+//         }
+//       },
+//       {
+//         "id": "key",
+//         "name": "key",
+//         "canTake": {
+//           "take": true,
+//           "message": "You take the key."
+//         }
+//       },
+//       {
+//         "id": "keycell",
+//         "name": "Key Cellprison",
+//         "description": "A key. It is for cellprison door.",
+//         "canTake": {
+//           "take": true,
+//           "message": "You take the key."
+//         }
+//       },
+//       {
+//         "id": "door_corr",
+//         "name": "door_corr",
+//         "description": "A door. It is locked.",
+//         "canOpen": {
+//           "open": false,
+//           "message": "The door is locked."
+//         },
+//         "canEnter": {
+//           "enter": false,
+//           "message": "The door is locked."
+//         },
+//         "canUnlock": {
+//           "unlock": true,
+//           "message": "You unlock the door.",
+//           "use": "key"
+//         },
+//         "state": "closed",
+//         "states": {
+//           "open": {
+//             "message": "The door is open.",
+//             "finish": true
+//           }
+//         }
+//       },
+//       {
+//         "id": "door_cell",
+//         "name": "door_cell",
+//         "description": "A door. It is locked.",
+//         "state": "locked",
+//         "locationnext": "Corridor",
+//         "locationbefore": "CellPrison",
+//         "event": "angry_guard",
+//         "canOpen": {
+//           "open": false,
+//           "message": "The door is locked"
+//         },
+//         "canUnlock": {
+//           "unlock": true,
+//           "message": "You unlock the door.",
+//           "use": "keycell"
+//         },
+//         "canEnter": {
+//           "enter": "Corridor",
+//           "message": "You enter the door.",
+//           "locationbefore": "CellPrison"
+//         },
+//         "states": {
+//           "open": {
+//             "message": "The door is open."
+//           },
+//           "closed": {
+//             "message": "The door is closed."
+//           }
+//         }
+//       },
+//       {
+//         "id": "guard",
+//         "name": "guard",
+//         "description": "A guard.",
+//         "state": "normal",
+//         "states": {
+//           "angry": {
+//             "message": "The guard is angry. He is ignoring you."
+//           },
+//           "normal": {
+//             "message": "The guard is normal."
+//           },
+//           "sleep": {
+//             "message": "The guard is sleeping."
+//           }
+//         },
+//         "canSearch": {
+//           "search": {
+//             "items": ["key"],
+//             "message": "You search the guard. You find a key."
+//           },
+//           "message": "You search the guard. You find a key."
+//         }
+//       }
+//     ],
+//     "event": [
+//       {
+//         "id": "angry_guard",
+// "trigger": {
+//   "verb": ["open", "unlock", "enter"],
+//   "object": "door_cell"
+// },
+//         "happen": false,
+//         "name": "angry_guard",
+//         "description": "The guard is angry.",
+//         "effects": [
+//           {
+//             "item": "guard",
+//             "state": "angry",
+//             "message": "Hey you prisoner! What are you doing?"
+//           },
+//           {
+//             "item": "door_cell",
+//             "state": "closed",
+//             "message": "The guard closes the door.",
+//             "actions": {
+//               "canUnlock": {
+//                 "allowed": false,
+//                 "message": "The guard watching you."
+//               },
+//               "canOpen": {
+//                 "allowed": false,
+//                 "message": "The guard watching you."
+//               },
+//               "canEnter": {
+//                 "allowed": false,
+//                 "message": "The guard watching you."
+//               }
+//             }
+//           }
+//         ]
+//       },
+//       {
+//         "id": "wakeup_midnight",
+//         "trigger": {
+//           "verb": "sleep",
+//           "object": "bed"
+//         },
+//         "happen": false,
+//         "name": "wakeup_midnight",
+//         "description": "You wake up at midnight.",
+//         "disableevent": "angry_guard",
+//         "effects": [
+//           {
+//             "item": "guard",
+//             "state": "sleep",
+//             "message": "The guard is sleeping."
+//           },
+//           {
+//             "item": "door_cell",
+//             "state": "closed",
+//             "message": "The door is open.",
+//             "actions": {
+//               "canOpen": {
+//                 "open": false,
+//                 "message": "The door is locked."
+//               },
+//               "canUnlock": {
+//                 "unlock": true,
+//                 "message": "You unlock the door.",
+//                 "use": "keycell"
+//               }
+//             }
+//           }
+//         ]
+//       }
+//     ],
+//     "ARGAVER": "1.0.0"
+//   }
+
 const fs = require("fs");
+const readline = require("readline");
+const PlayerManager = require("./PlayerManager");
+const log = require("./lib/Console");
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
 });
 
-const PlayerManager = require("./player");
-
 class GameEngine {
   constructor() {
-    this.player = new PlayerManager();
     this.game = null;
+    this.log = log;
+    this.player = new PlayerManager(this);
     this.location = null;
+    this.config = null;
   }
-  async loadGame(filename) {
-    console.log("Build Using ARGA GAME ENGINE")
-    log("Loading game...", "fgGreen");
-    await fs.readFile(filename, "utf8", (err, data) => {
-      if (err) {
-        console.error(err);
-        process.exit(1);
-      }
-      try {
-        this.game = JSON.parse(data);
-        log(`Game ${this.game.name} Loaded`);
-      } catch (e) {
-        console.error(e);
-        process.exit(1);
-      }
-      this.location = this.game.location[this.game.start];
-      this.player.location = this.game.start;
-      let inventoryGame = this.game.inventory;
-      for (let item of inventoryGame) {
-        this.player.addItem(item);
-        log(`You have ${item}`, "fgGreen");
-      }
+
+  /**
+   * Loads a game from the specified path.
+   * @param {string} path - The path to the game file.
+   * @returns {Promise<void>} - A promise that resolves when the game is loaded.
+   */
+  async loadGame(path) {
+    console.clear();
+    log(
+      `
+    ___    ____  _________ 
+    /   |  / __ \/ ____/   |
+   / /| | / /_/ / / __/ /| |
+  / ___ |/ _, _/ /_/ / ___ |
+ /_/  |_/_/ |_|\____/_/  |_|
+ ARGA GAME ENGINE
+        `,
+      "fgCyan"
+    );
+    try {
+      // parse to the variable data
+      const data = fs.readFileSync(path, "utf8");
+      // parse to the variable game
+      this.game = JSON.parse(data);
+      // set the location
+      this.location = this.game.locations.find(
+        (location) => location.id === this.game.start
+      );
+      this.player.location = this.location.id;
+
+      // set inventory push inventory game to inventory player
+      this.player.inventory = this.game.inventory;
+      // set config
+      this.config = this.game.config;
+
+      // Display the welcome message
+      log(`Welcome to ${this.game.name}! By ${this.game.author}`, "fgCyan");
+      log(this.game.description, "fgCyan");
+      log(
+        "Type 'help' for a list of commands, Type look for items in your location",
+        "fgCyan"
+      );
 
       this.look();
-    });
+    } catch (error) {
+      console.error("Error loading game:", error);
+    }
 
-    this.gameLoop();
+    // Wait for the game to load before running the game loop
+    await this.gameLoop();
   }
 
+  look() {
+    log(this.location.name, "fgGreen");
+    log(this.location.description, "fgGreen");
+    if (this.location.items.length > 0) {
+      log("You see:", "fgGreen");
+      for (let item of this.location.items) {
+        const state = this.game.item.find((itemGame) => itemGame.id === item)
+          .state
+          ? `(${this.game.item.find((itemGame) => itemGame.id === item).state})`
+          : "";
+        log(`- ${item} ${state}`, "fgYellow");
+      }
+    }
+  }
+
+  // handleInput
   handleInput(input) {
-    // Split the input into a command and arguments
     const [command, ...args] = input.toLowerCase().split(" ");
-    // Handle the command
+    const allowedActions = this.config.allowedActions;
+
+    if (!allowedActions.includes(command)) {
+      const item = this.findItemById(command);
+      return item
+        ? log(item.description, "fgGreen")
+        : log("You can't do that.", "fgRed");
+    }
+
+    const event = this.game.event.find((event) => {
+      const triggerVerb = event.trigger.verb;
+      return (
+        triggerVerb &&
+        (Array.isArray(triggerVerb)
+          ? triggerVerb.includes(command)
+          : triggerVerb === command) &&
+        event.trigger.object === args[0]
+      );
+    });
+
+    if (event && !event.happen) {
+      for (let effect of event.effects) {
+        const itemIndex = this.game.item.findIndex(
+          (item) => item.id === effect.item
+        );
+        const item = this.game.item[itemIndex];
+        if (item) {
+          if (effect.state) item.state = effect.state;
+          if (effect.message) log(effect.message, "fgGreen");
+          if (effect.actions) Object.assign(item, effect.actions);
+        }
+      }
+      event.happen = true;
+      if (event.disableevent)
+        this.findEventById(event.disableevent).happen = true;
+    }
+
     switch (command) {
       case "look":
         this.look();
         break;
-      case "take":
-        this.take(args[0]);
-        break;
-      case "drop":
-        this.drop(args[0]);
-        break;
       case "open":
         this.open(args[0]);
         break;
-      case "search":
-        this.search(args[0]);
-        break;
-      case "close":
-        this.close(args[0]);
+      case "take":
+        this.take(args[0]);
         break;
       case "inventory":
         this.inventory();
         break;
+      case "drop":
+        this.drop(args[0]);
+        break;
+      case "search":
+        this.search(args[0]);
+        break;
       case "unlock":
         this.unlock(args[0], args[1]);
+        break;
+      case "close":
+        this.close(args[0]);
         break;
       case "enter":
         this.enter(args[0]);
@@ -81,336 +422,361 @@ class GameEngine {
       case "quit":
         this.quit();
         break;
+      case "sleep":
+        this.sleep(args[0]);
+        break;
+      case "eval":
+        this.config.debug
+          ? this.eval(args.join(" "))
+          : log("Debug mode is disabled.", "fgRed");
+        break;
       case "save":
         this.save();
         break;
       case "load":
-        this.load(args[0]);
+        this.loadSave();
         break;
       default:
-        log("Unknown command", "fgRed");
+        log("You can't do that.", "fgRed");
+        break;
     }
   }
 
+  // game loop
   gameLoop() {
-    rl.question("> ", (input) => {
+    rl.question(`${this.location.name}> `, (input) => {
       this.handleInput(input);
       this.gameLoop();
     });
   }
 
-  look() {
-    log(this.location.name, "fgGreen");
-    log(this.location.description, "fgYellow");
-    if (this.location.items && this.location.items.length > 0) {
-      log("You see:", "fgGreen");
-      for (let item of this.location.items) {
-        const state = this.game.item[item].state ? ` (${this.game.item[item].state})` : ""  ;
-        log("- " + this.game.item[item].name + state, "fgYellow");
-      }
-    }
-    // debug
-    // log(this.location);
-  }
-  take(itemName) {
-    const item = this.game.item[itemName];
+  open(item) {
+    const itemIndexGame = this.findItemById(item);
 
-    if (!item || !this.location.items.includes(itemName)) {
-      log(`There is no ${itemName} here.`, "fgRed");
+    if (!this.itemExistInLocation(item)) {
+      log(`You can't find the ${item}`, "fgRed");
       return;
     }
 
-    if (item.canTake && item.canTake.take) {
-      this.location.items = this.location.items.filter((i) => i !== itemName);
-      this.player.addItem(itemName);
-      delete this.game.location[itemName];
-      log(item.canTake.message, "fgGreen");
-      this.inventory();
-    } else {
-      log(
-        item.canTake ? item.canTake.message : `You can't take ${itemName}`,
-        "fgRed"
-      );
+    if (!itemIndexGame.canOpen || !itemIndexGame.canOpen.open) {
+      log(`You can't open the ${item}`, "fgRed");
+      return;
+    }
+
+    if (itemIndexGame.state === "open") {
+      log(`The ${item} is already open.`, "fgRed");
+      if (itemIndexGame.canEnter) {
+        this.enter(item);
+      }
+      return;
+    }
+
+    log(itemIndexGame.canOpen.message || `You open the ${item}`, "fgGreen");
+
+    if (itemIndexGame.states.open.items) {
+      log("You find :", "fgYellow");
+      this.arraytoList(itemIndexGame.states.open.items);
+      this.addItemsToLocation(itemIndexGame.states.open.items);
+    }
+
+    itemIndexGame.state = "open";
+
+    if (itemIndexGame.states.open.finish) {
+      log(this.game.finishmessage, "fgGreen");
+      process.exit();
+    }
+
+    if (itemIndexGame.canEnter) {
+      this.enter(item);
     }
   }
 
-  drop(itemName) {
-    if (this.player.hasItem(itemName)) {
-      this.player.removeItem(itemName);
-      this.location.items.push(itemName);
-      log(`You dropped ${itemName}`, "fgGreen");
+  take(items) {
+    if (this.itemExistInLocation(items)) {
+      const item = this.findItemById(items);
+      if (item.canTake.take) {
+        this.player.addItem(item.id);
+        this.location.items.splice(this.location.items.indexOf(item.id), 1);
+        log(item.canTake.message || `You take the ${item.name}`, "fgGreen");
+      } else {
+        log(item.canTake.message || `You can't take the ${item.name}`, "fgRed");
+      }
     } else {
-      log(`You don't have ${itemName}`, "fgRed");
+      log("You can't find the " + items, "fgRed");
     }
   }
 
   inventory() {
-    log("You have:", "fgGreen");
-    if (this.player.getInventory().length > 0) {
-      for (let item of this.player.getInventory()) {
-        log("- " + this.game.item[item].name, "fgYellow");
-      }
-    } else {
-      log("Nothing.", "fgRed");
-    }
+    const inventory = this.player.getInventoryTable();
+    return inventory;
   }
 
-  open(itemName) {
-    const item = this.game.item[itemName];
-
-    if (!item) {
-      log(`There is no ${itemName} here.`, "fgRed", "bgYellow");
-      return;
-    }
-
-    if (!item.canOpen || !item.canOpen.open) {
-      log(
-        item.canOpen ? item.canOpen.message : "You can't open that.",
-        "fgRed",
-        "bgYellow"
-      );
-
-      if (item.canUnlock && item.canUnlock.unlock) {
-        return new Promise((resolve) => {
-          rl.question("Do you want to unlock it? (yes/no) ", (answer) => {
-            if (answer === "yes") {
-              this.unlock(itemName);
-              this.gameLoop();
-              resolve();
-            }
-            this.gameLoop();
-            resolve();
-          });
-        });
-      }
-      return;
-    }
-
-    if (item.state === "open") {
-      if (item.canEnter && item.canEnter.enter) {
-        return this.enter(itemName);
-      }
-      log("It's already open.", "fgRed", "bgYellow");
-      return;
-    }
-
-    item.state = "open";
-    log(item.canOpen.message, "fgGreen");
-
-    if (
-      item.states.open &&
-      item.states.open.items &&
-      item.states.open.items.length > 0
-    ) {
-      this.location.items = this.location.items.filter(
-        (i) => !item.states.open.items.includes(i)
-      );
-      log(item.states.open.message, "fgGreen");
-
-      for (let items of item.states.open.items) {
-        log("- " + this.game.item[items].name, "fgYellow");
-        this.location.items.push(items);
-      }
-      this.look();
+  drop(item) {
+    const itemhas = this.player.hasItem(item);
+    if (itemhas) {
+      const itemIndex = this.player.itemIndex(item);
+      const itemDrop = this.player.inventory.splice(itemIndex, 1);
+      this.location.items.push(itemDrop[0]);
+      log("You drop the " + item, "fgGreen");
     } else {
-      this.enter(itemName);
+      log("You don't have the " + item, "fgRed");
     }
   }
-
-  search(itemName) {
-    const item = this.game.item[itemName];
-
-    if (!item) {
-      log(`There is no ${itemName} here.`, "fgRed", "bgYellow");
-      return;
-    }
-
-    if (!item.canSearch) {
-      log(`You can't search ${itemName}`, "fgRed", "bgYellow");
-      return;
-    }
-
-    const { canSearch } = item;
-
-    if (canSearch.search) {
-      log(canSearch.message, canSearch.search.items ? "fgGreen" : "fgRed");
-
-      if (canSearch.search.items && canSearch.search.items.length > 0) {
-        this.location.items = this.location.items.filter(
-          (i) => !canSearch.search.items.includes(i)
-        );
-
-        for (const searchedItem of canSearch.search.items) {
-          const searchedItemName = this.game.item[searchedItem].name;
-          log(`- ${searchedItemName}`, "fgYellow");
-          this.location.items.push(searchedItem);
-        }
-
-        this.look();
-      }
-    } else {
-      log(canSearch.message, "fgRed");
-    }
-  }
-
-  close(itemName) {
-    let item = this.game.item[itemName];
-    if (item) {
-      if (item.canClose && item.canClose.close) {
-        item.state = "closed";
-        log(item.canClose.message, "fgGreen");
-        if (item.states.open.items && item.states.open.items.length > 0) {
-          this.location.items = this.location.items.filter(
-            (i) => !item.states.open.items.includes(i)
+  search(item) {
+    if (this.itemExistInLocation(item)) {
+      const itemIndexGame = this.findItemById(item);
+      if (itemIndexGame.canSearch) {
+        if (itemIndexGame.canSearch.search) {
+          if (itemIndexGame.canSearch.search.items) {
+            this.addItemsToLocation(itemIndexGame.canSearch.search.items);
+            log(
+              itemIndexGame.canSearch.search.message ||
+                `You search the ${item}`,
+              "fgGreen"
+            );
+            log(`You find :`, "fgYellow");
+            return this.arraytoList(itemIndexGame.canSearch.search.items);
+          }
+          log(
+            itemIndexGame.canSearch.search.message || `You search the ${item}`,
+            "fgGreen"
           );
-          log(item.states.closed.message, "fgGreen");
+          itemIndexGame.canSearch.search = false;
+          itemIndexGame.canSearch.message = "You already search the " + item;
+        } else {
+          log(
+            itemIndexGame.canSearch.message || `You can't search the ${item}`,
+            "fgRed"
+          );
         }
       } else {
-        log(`You can't close ${itemName}`, "fgRed", "bgYellow");
+        log("You can't search the " + item, "fgRed");
       }
     } else {
-      log(`There is no ${itemName} here.`, "fgRed", "bgYellow");
+      log("You can't find the " + item, "fgRed");
     }
   }
 
-  async unlock(itemName, tool) {
-    const item = this.game.item[itemName];
-
-    if (!item) {
-      log(`There is no ${itemName} here.`, "fgRed");
-      return;
-    }
-
-    const { canUnlock } = item;
-
-    if (!tool) {
-      if (this.player.hasItem(item.canUnlock.use)) {
-        log(`You unlock ${itemName} with ${item.canUnlock.use}`, "fgGreen");
-        item.state = "open";
-        item.canOpen.open = true;
-        log(canUnlock.message, "fgGreen");
-        return;
+  sleep(item) {
+    const itemIndexGame = this.findItemById(item);
+    if (this.itemExistInLocation(item)) {
+      if (itemIndexGame.canSleep) {
+        if (itemIndexGame.canSleep.sleep) {
+          log(
+            itemIndexGame.canSleep.message || `You sleep on the ${item}`,
+            "fgGreen"
+          );
+        } else {
+          log(
+            itemIndexGame.canSleep.message || `You can't sleep on the ${item}`,
+            "fgRed"
+          );
+        }
       } else {
-        log(`You don't have item to unlockit.`, "fgRed");
-        return;
+        log("You can't sleep on the " + item, "fgRed");
       }
-    }
-
-    if (!canUnlock || !canUnlock.unlock || !canUnlock.use) {
-      log(`You can't unlock ${itemName}`, "fgRed");
-      return;
-    }
-
-    if (!this.player.inventory.includes(tool)) {
-      log(`You don't have ${tool} in your inventory.`, "fgRed");
-      return;
-    }
-
-    if (!canUnlock.use.includes(tool)) {
-      log(`You can't unlock ${itemName} with ${tool}`, "fgRed");
-      return;
-    }
-
-    item.state = "open";
-    item.canOpen.open = true;
-    log(canUnlock.message, "fgGreen");
-  }
-
-  enter(itemName) {
-    const item = this.game.item[itemName];
-
-    if (!item) {
-      log(`There is no ${itemName} here.`, "fgRed");
-      return;
-    }
-
-    if (item.state === "closed") {
-      log(`You can't enter ${itemName} because it's closed.`, "fgRed");
-      return;
-    }
-
-    if (!item.canEnter) {
-      log(`You can't enter ${itemName}.`, "fgRed");
-      return;
-    }
-
-    if (item.canEnter.enter) {
-      if (item.states.open.finish) {
-        log(this.game.finishmessage, "fgGreen");
-        this.quit();
-      }
-      const targetLocation =
-        item.canEnter.enter === this.player.location
-          ? item.locationbefore
-          : item.canEnter.enter;
-      this.location = this.game.location[targetLocation];
-      this.player.location = targetLocation;
-      this.look();
     } else {
-      log(item.canEnter.message || `You can't enter ${itemName}.`, "fgRed");
+      log("You can't find the " + item, "fgRed");
     }
   }
 
-save() {
-    rl.question("Enter a name for the save: ", (saveName) => {
-        const savePath = `save/${saveName}.json`;
-        fs.writeFile(savePath, JSON.stringify(this), (err) => {
-            if (err) {
-                console.error(err);
-                return;
-            }
-            log(`Game saved as ${savePath}!`, "fgGreen");
-        });
-    });
-}
+  unlock(item, tool) {
+    const itemIndexGame = this.findItemById(item);
 
-load(saveName) {
-    const savePath = `save/${saveName}.json`;
-    fs.readFile(savePath, "utf8", (err, data) => {
-        if (err) {
-            console.error(err);
-            log("Save not found.", "fgRed");
-            return;
+    if (!this.itemExistInLocation(item)) {
+      return log(`You can't find the ${item}`, "fgRed");
+    }
+
+    const canUnlock = itemIndexGame.canUnlock;
+
+    if (!canUnlock || !canUnlock.unlock) {
+      return log(canUnlock?.message || `You can't unlock the ${item}`, "fgRed");
+    }
+
+    const requiredTool = canUnlock.use;
+    const hasRequiredTool = this.player.hasItem(requiredTool);
+
+    if (requiredTool && tool !== requiredTool && !hasRequiredTool) {
+      return log(`You can't unlock the ${item}.`, "fgRed");
+    }
+
+    if (!hasRequiredTool) {
+      return log(`You can't unlock`, "fgRed");
+    }
+
+    log(canUnlock.message || `You unlock the ${item} with ${tool}`, "fgGreen");
+
+    if (itemIndexGame.states.open.items) {
+      this.addItemsToLocation(itemIndexGame.states.open.items);
+    }
+    if (itemIndexGame.canOpen) {
+      itemIndexGame.canOpen.open = true;
+      itemIndexGame.state = "open";
+    }
+  }
+
+  close(item) {
+    const itemIndexGame = this.findItemById(item);
+    if (this.itemExistInLocation(item)) {
+      if (itemIndexGame.canClose) {
+        if (itemIndexGame.canClose.close) {
+          log(
+            itemIndexGame.canClose.message || `You close the ${item}`,
+            "fgGreen"
+          );
+          this.location.items.splice(itemIndexGame, 1);
+          if (itemIndexGame.states.closed.items) {
+            this.addItemsToLocation(itemIndexGame.states.closed.items);
+          }
+          itemIndexGame.state = "closed";
+        } else {
+          log(
+            itemIndexGame.canClose.message || `You can't close the ${item}`,
+            "fgRed"
+          );
         }
-        try {
-            const save = JSON.parse(data);
-            this.player.location = save.player.location;
-            this.player.inventory = save.player.inventory;
-            this.game = save.game;
-            this.location = save.location;
-            log("Game loaded!", "fgGreen");
-            this.look();
-        } catch (e) {
-            console.error(e);
-        }
+      } else {
+        log("You can't close the " + item, "fgRed");
+      }
+    } else {
+      log("You can't find the " + item, "fgRed");
+    }
+  }
+
+  enter(item) {
+    const itemIndexGame = this.findItemById(item);
+
+    // Check if the item exists in the current location
+    if (!this.itemExistInLocation(item)) {
+      log(`You can't find the ${item}`, "fgRed");
+      return;
+    }
+
+    // Check if the item can be entered
+    if (!itemIndexGame.canEnter || !itemIndexGame.canEnter.enter) {
+      log(`You can't enter the ${item}`, "fgRed");
+      return;
+    }
+
+    // Check if the item is open
+    if (itemIndexGame.state !== "open") {
+      log(`The ${item} is not open. You can't enter.`, "fgRed");
+      return;
+    }
+
+    // Check if the item has a location before entering
+    if (itemIndexGame.canEnter.locationbefore !== this.player.location) {
+      this.movePlayer(itemIndexGame.canEnter.locationbefore);
+      return;
+    }
+
+    // Enter the specified location
+    this.location = this.game.locations.find(
+      (location) => location.id === itemIndexGame.canEnter.enter
+    );
+    this.player.location = this.location.id;
+
+    // Display a message or default message
+    log(itemIndexGame.canEnter.message || `You enter the ${item}`, "fgGreen");
+  }
+  debug() {
+    log(JSON.stringify(this), "fgGreen");
+  }
+
+  eval(code) {
+    try {
+      const result = eval(code);
+      log(JSON.stringify(result), "fgGreen");
+    } catch (error) {
+      log(error, "fgRed");
+    }
+  }
+
+  async save() {
+    const game = this.game;
+    const player = this.player;
+    const location = this.location;
+
+    const replacer = (key, value) => {
+      if (key === "gameEngine") return undefined;
+      return value;
+    };
+
+    const data = JSON.stringify({ game, player, location }, replacer);
+
+    rl.question("Enter the name for the save file: ", async (name) => {
+      await fs.writeFileSync(`save/${name}.json`, data);
+      return this.gameLoop();
     });
-}
+  }
+
+  async loadSave() {
+    rl.question("Enter the name of the save file: ", async (save) => {
+      const data = fs.readFileSync(`save/${save}.json`, "utf8");
+      const { game, player, location } = JSON.parse(data);
+
+      this.game = game;
+      this.player.location = player.location;
+      this.player.inventory = player.inventory;
+
+      this.location = location;
+
+      log("Game loaded.", "fgGreen");
+      return this.gameLoop();
+    });
+  }
 
   help() {
-    log("Welcome to the game.", "fgGreen");
-    log("You can use the following commands:", "fgGreen");
-    log("- look: Look at the location.", "fgGreen");
-    log("- search [item]: Search an item.", "fgGreen");
-    log("- take [item]: Take an item.", "fgGreen");
-    log("- drop [item]: Drop an item.", "fgGreen");
-    log("- inventory: Show the inventory.");
-    log("- enter [door/smth]: Enter an object.", "fgGreen");
-    log("- open [item]: Open an item.", "fgGreen");
-    log("- unlock [item] [tool]: Unlock an item.", "fgGreen");
-    log("- close [item]: Close an item.", "fgGreen");
-    log("- quit: Quit the game.", "fgGreen");
-    log("- help: Show this help message.", "fgGreen");
+    const allowedAction = this.config.allowedActions;
+    log("Commands:", "fgGreen");
+    for (let action of allowedAction) {
+      log(`- ${action}`, "fgYellow");
+    }
   }
 
   quit() {
-    log("Goodbye!", "fgGreen");
-    process.exit(0);
+    log("Thanks for playing!", "fgGreen");
+    process.exit();
+  }
+
+  // list like
+  // - item1
+  // - item2
+  // - item3
+  arraytoList(arrayss) {
+    for (let array of arrayss) {
+      log(`- ${array}`, "fgYellow");
+    }
+  }
+
+  movePlayer(location) {
+    const locaton = this.findLocationById(location);
+    this.location = locaton;
+    this.player.location = locaton.id;
+  }
+
+  findItemById(id) {
+    return this.game.item.find((item) => item.id === id);
+  }
+  findLocationById(id) {
+    return this.game.locations.find((location) => location.id === id);
+  }
+  itemExistInLocation(item) {
+    return this.location.items.indexOf(item) !== -1;
+  }
+
+  itemExistInGame(item) {
+    return this.game.item.indexOf(item) !== -1;
+  }
+
+  addItemsToLocation(items) {
+    for (let item of items) {
+      this.location.items.push(item);
+    }
+  }
+  findEventById(id) {
+    return this.game.event.find((event) => event.id === id);
   }
 }
-
-// handle error
-process.on("uncaughtException", (err) => {
-  console.error("There was an uncaught error", err);
-});
 
 module.exports = GameEngine;

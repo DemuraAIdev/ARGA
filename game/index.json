@@ -3,25 +3,43 @@
   "author": "Abdul Vaiz",
   "version": "1.0.0",
   "start": "CellPrison",
+  "description": "You are in a prison cell. You want to escape from the prison.",
   "config": {
-
+    "debug": true,
+    "allowedActions": [
+      "take",
+      "search",
+      "open",
+      "close",
+      "enter",
+      "unlock",
+      "sleep",
+      "help",
+      "save",
+      "load",
+      "quit",
+      "look"
+    ]
   },
   "inventory": [],
   "finishmessage": "You escaped the prison. Congratulations!",
-  "location": {
-    "CellPrison": {
-      "name": "CellPrison",
+  "locations": [
+    {
+      "id": "CellPrison",
+      "name": "Prison Cell",
       "description": "You are in a prison cell. There is a bed and a desk. There is a door.",
       "items": ["bed", "desk", "door_cell"]
     },
-    "Corridor": {
+    {
+      "id": "Corridor",
       "name": "Corridor",
       "description": "You are in a corridor. There is a door.",
-      "items": ["door_corr", "door_cell"]
+      "items": ["door_corr", "door_cell", "guard"]
     }
-  },
-  "item": {
-    "bed": {
+  ],
+  "item": [
+    {
+      "id": "bed",
       "name": "bed",
       "description": "A bed. It looks comfortable.",
       "canTake": {
@@ -31,9 +49,15 @@
       "canSearch": {
         "search": false,
         "message": "You can't search the bed. but you can sleep on it (coming soon)."
-      }
+      },
+      "canSleep": {
+        "sleep": true,
+        "message": "You sleep on the bed."
+      },
+      "event": "wakeup_midnight"
     },
-    "desk": {
+    {
+      "id": "desk",
       "name": "desk",
       "description": "A desk. It has a drawer.",
       "canSearch": {
@@ -44,7 +68,8 @@
         "message": "You search the desk. You find a drawer."
       }
     },
-    "drawer": {
+    {
+      "id": "drawer",
       "canSearch": {
         "search": false,
         "message": "You can't search the drawer. but you can open it. (command: open drawer)"
@@ -53,7 +78,7 @@
       "description": "A drawer. It is closed.",
       "canOpen": {
         "open": true,
-        "message": "You open the drawer."
+        "message": "You open the drawer. You find a key"
       },
       "canClose": {
         "close": true,
@@ -62,22 +87,33 @@
       "state": "closed",
       "states": {
         "open": {
-          "items": ["key"],
-          "message": "The drawer is open. There is a key inside. (command: take key)"
+          "message": "The drawer is open. You find key.",
+          "items": ["keycell"]
         },
         "closed": {
           "message": "The drawer is closed."
         }
       }
     },
-    "key": {
+    {
+      "id": "key",
       "name": "key",
       "canTake": {
         "take": true,
         "message": "You take the key."
       }
     },
-    "door_corr": {
+    {
+      "id": "keycell",
+      "name": "Key Cellprison",
+      "description": "A key. It is for cellprison door.",
+      "canTake": {
+        "take": true,
+        "message": "You take the key."
+      }
+    },
+    {
+      "id": "door_corr",
       "name": "door_corr",
       "description": "A door. It is locked.",
       "canOpen": {
@@ -85,7 +121,7 @@
         "message": "The door is locked."
       },
       "canEnter": {
-        "enter": true,
+        "enter": false,
         "message": "The door is locked."
       },
       "canUnlock": {
@@ -101,15 +137,22 @@
         }
       }
     },
-    "door_cell": {
+    {
+      "id": "door_cell",
       "name": "door_cell",
       "description": "A door. It is locked.",
-      "state": "closed",
+      "state": "locked",
       "locationnext": "Corridor",
       "locationbefore": "CellPrison",
+      "event": "angry_guard",
       "canOpen": {
-        "open": true,
-        "message": "You open the door."
+        "open": false,
+        "message": "The door is locked"
+      },
+      "canUnlock": {
+        "unlock": true,
+        "message": "You unlock the door.",
+        "use": "keycell"
       },
       "canEnter": {
         "enter": "Corridor",
@@ -124,7 +167,103 @@
           "message": "The door is closed."
         }
       }
+    },
+    {
+      "id": "guard",
+      "name": "guard",
+      "description": "A guard.",
+      "state": "normal",
+      "states": {
+        "angry": {
+          "message": "The guard is angry. He is ignoring you."
+        },
+        "normal": {
+          "message": "The guard is normal."
+        },
+        "sleep": {
+          "message": "The guard is sleeping."
+        }
+      },
+      "canSearch": {
+        "search": {
+          "items": ["key"],
+          "message": "You search the guard. You find a key."
+        },
+        "message": "You search the guard. You find a key."
+      }
     }
-  },
-  "CMDGAVER": "1.0.0"
+  ],
+  "event": [
+    {
+      "id": "angry_guard",
+      "trigger": {
+        "verb": ["open", "unlock", "enter"],
+        "object": "door_cell"
+      },
+      "happen": false,
+      "name": "angry_guard",
+      "description": "The guard is angry.",
+      "effects": [
+        {
+          "item": "guard",
+          "state": "angry",
+          "message": "Hey you prisoner! What are you doing?"
+        },
+        {
+          "item": "door_cell",
+          "state": "closed",
+          "message": "The guard closes the door.",
+          "actions": {
+            "canUnlock": {
+              "allowed": false,
+              "message": "The guard watching you."
+            },
+            "canOpen": {
+              "allowed": false,
+              "message": "The guard watching you."
+            },
+            "canEnter": {
+              "allowed": false,
+              "message": "The guard watching you."
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "wakeup_midnight",
+      "trigger": {
+        "verb": "sleep",
+        "object": "bed"
+      },
+      "happen": false,
+      "name": "wakeup_midnight",
+      "description": "You wake up at midnight.",
+      "disableevent": "angry_guard",
+      "effects": [
+        {
+          "item": "guard",
+          "state": "sleep",
+          "message": "The guard is sleeping."
+        },
+        {
+          "item": "door_cell",
+          "state": "closed",
+          "message": "The door is open.",
+          "actions": {
+            "canOpen": {
+              "open": false,
+              "message": "The door is locked."
+            },
+            "canUnlock": {
+              "unlock": true,
+              "message": "You unlock the door.",
+              "use": "keycell"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "ARGAVER": "1.0.0"
 }
