@@ -523,38 +523,42 @@ class GameEngine {
     }
   }
   search(item) {
-    if (this.itemExistInLocation(item)) {
-      const itemIndexGame = this.findItemById(item);
-      if (itemIndexGame.canSearch) {
-        if (itemIndexGame.canSearch.search) {
-          if (itemIndexGame.canSearch.search.items) {
-            this.addItemsToLocation(itemIndexGame.canSearch.search.items);
-            log(
-              itemIndexGame.canSearch.search.message ||
-                `You search the ${item}`,
-              "fgGreen"
-            );
-            log(`You find :`, "fgYellow");
-            return this.arraytoList(itemIndexGame.canSearch.search.items);
-          }
-          log(
-            itemIndexGame.canSearch.search.message || `You search the ${item}`,
-            "fgGreen"
-          );
-          itemIndexGame.canSearch.search = false;
-          itemIndexGame.canSearch.message = "You already search the " + item;
-        } else {
-          log(
-            itemIndexGame.canSearch.message || `You can't search the ${item}`,
-            "fgRed"
-          );
-        }
-      } else {
-        log("You can't search the " + item, "fgRed");
-      }
-    } else {
-      log("You can't find the " + item, "fgRed");
+    const itemIndexGame = this.findItemById(item);
+
+    if (!this.itemExistInLocation(item)) {
+      log(`You can't find the ${item}`, "fgRed");
+      return;
     }
+
+    if (!itemIndexGame.canSearch) {
+      log(`You can't search the ${item}`, "fgRed");
+      return;
+    }
+
+    if (!itemIndexGame.canSearch.search) {
+      log(
+        itemIndexGame.canSearch.message || `You can't search the ${item}`,
+        "fgRed"
+      );
+      return;
+    }
+
+    if (itemIndexGame.canSearch.search.items) {
+      this.addItemsToLocation(itemIndexGame.canSearch.search.items);
+      log(
+        itemIndexGame.canSearch.search.message || `You search the ${item}`,
+        "fgGreen"
+      );
+      log(`You find :`, "fgYellow");
+      return this.arraytoList(itemIndexGame.canSearch.search.items);
+    }
+
+    log(
+      itemIndexGame.canSearch.search.message || `You search the ${item}`,
+      "fgGreen"
+    );
+    itemIndexGame.canSearch.search = false;
+    itemIndexGame.canSearch.message = `You already searched the ${item}`;
   }
 
   sleep(item) {
