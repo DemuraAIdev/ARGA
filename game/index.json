@@ -259,7 +259,12 @@
               "unlock": true,
               "message": "You unlock the door.",
               "use": "keycell"
-            }
+            },
+            "canEnter": {
+              "enter": "Corridor",
+              "message": "You enter the door.",
+              "locationbefore": "CellPrison"
+            }	
           }
         }
       ]
