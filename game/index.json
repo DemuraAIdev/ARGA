@@ -18,7 +18,8 @@
       "save",
       "load",
       "quit",
-      "look"
+      "look",
+      "inventory"
     ]
   },
   "inventory": [],
@@ -98,6 +99,7 @@
     {
       "id": "key",
       "name": "key",
+      "description": "A key. It is for corridor door.",
       "canTake": {
         "take": true,
         "message": "You take the key."
