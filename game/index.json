@@ -20,6 +20,7 @@
       "quit",
       "look",
       "inventory",
+      "read",
       "drop",
       "talk",
       "restart"
@@ -30,6 +31,7 @@
       "open": "[item] Open an item",
       "close": "[item] Close an item",
       "enter": "[item] Enter a location",
+      "read": "[item] Read an item",
       "unlock": "[item] Unlock an item",
       "sleep": "[item] Sleep on an item",
       "help": "Display help",
@@ -84,7 +86,7 @@
       "description": "A plain desk with a closed drawer. It might hold the key to your escape.",
       "canSearch": {
         "search": {
-          "items": ["drawer"],
+          "items": ["drawer", "paper"],
           "message": "You search the desk and discover a closed drawer."
         },
         "message": "You search the desk, revealing a closed drawer."
@@ -117,6 +119,15 @@
         "closed": {
           "message": "The drawer is closed."
         }
+      }
+    },
+    {
+      "id": "paper",
+      "name": "paper",
+      "description": "A piece of paper with a message written on it.",
+      "canRead": {
+        "read": true,
+        "message": "'The key to your escape is in the drawer. just open it.'"
       }
     },
     {

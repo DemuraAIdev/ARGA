@@ -1,330 +1,3 @@
-// // STRCUTRE OF GAME
-// {
-//   "name": "Prison Break",
-//   "author": "Abdul Vaiz",
-//   "version": "1.0.0",
-//   "start": "CellPrison",
-//   "description": "You find yourself confined in a dreary prison cell with only a bed, a desk, and a locked door. Your mission: Escape from this seemingly impenetrable prison.",
-//   "config": {
-//     "debug": true,
-//     "allowedActions": [
-//       "take",
-//       "search",
-//       "open",
-//       "close",
-//       "enter",
-//       "unlock",
-//       "sleep",
-//       "help",
-//       "save",
-//       "load",
-//       "quit",
-//       "look",
-//       "inventory",
-//       "drop",
-//       "talk"
-//     ]
-//   },
-//   "inventory": [],
-//   "finishmessage": "Congratulations! You've successfully escaped the prison.",
-//   "gameovermessage": "Game Over",
-//   "locations": [
-//     {
-//       "id": "CellPrison",
-//       "name": "Prison Cell",
-//       "description": "Your surroundings are bleak—a bed, a desk, and a closed door that taunts you. Your journey to freedom begins here.",
-//       "items": ["bed", "desk", "door_cell"]
-//     },
-//     {
-//       "id": "Corridor",
-//       "name": "Corridor",
-//       "description": "You step into a dimly lit corridor. A single door stands between you and freedom.",
-//       "items": ["door_corr", "door_cell", "guard"]
-//     }
-//   ],
-//   "item": [
-//     {
-//       "id": "bed",
-//       "name": "bed",
-//       "description": "A simple bed that appears surprisingly comfortable. A potential refuge in your quest for freedom.",
-//       "canTake": {
-//         "take": false,
-//         "message": "Attempting to take the bed is futile; it's firmly fixed to the ground."
-//       },
-//       "canSearch": {
-//         "search": false,
-//         "message": "Searching the bed yields nothing of interest, but you contemplate using it for a stealthy nap (coming soon)."
-//       },
-//       "canSleep": {
-//         "sleep": true,
-//         "message": "You decide to take a moment to rest on the bed."
-//       },
-//       "event": "wakeup_midnight"
-//     },
-//     {
-//       "id": "desk",
-//       "name": "desk",
-//       "description": "A plain desk with a closed drawer. It might hold the key to your escape.",
-//       "canSearch": {
-//         "search": {
-//           "items": ["drawer"],
-//           "message": "You search the desk and discover a closed drawer."
-//         },
-//         "message": "You search the desk, revealing a closed drawer."
-//       }
-//     },
-//     {
-//       "id": "drawer",
-//       "canSearch": {
-//         "search": {
-//           "items": ["keycell"],
-//           "message": "Your search reveals a key hidden in the drawer."
-//         },
-//         "message": "You can't search the drawer, but you can open it (command: open drawer)."
-//       },
-//       "name": "drawer",
-//       "description": "A closed drawer that piques your curiosity.",
-//       "canOpen": {
-//         "open": true,
-//         "message": "You open the drawer, revealing a key."
-//       },
-//       "canClose": {
-//         "close": true,
-//         "message": "You close the drawer."
-//       },
-//       "state": "closed",
-//       "states": {
-//         "open": {
-//           "message": "The drawer is open, and you find a key inside."
-//         },
-//         "closed": {
-//           "message": "The drawer is closed."
-//         }
-//       }
-//     },
-//     {
-//       "id": "key",
-//       "name": "key",
-//       "description": "A key crucial for unlocking the corridor door and securing your escape.",
-//       "canTake": {
-//         "take": true,
-//         "message": "You take the key, recognizing its potential significance."
-//       }
-//     },
-//     {
-//       "id": "keycell",
-//       "name": "Key Cellprison",
-//       "description": "A key specifically designed to unlock the door to your prison cell.",
-//       "canTake": {
-//         "take": true,
-//         "message": "You take the key, sensing its importance in your quest for freedom."
-//       }
-//     },
-//     {
-//       "id": "door_corr",
-//       "name": "door_corr",
-//       "description": "A locked door blocking your path in the corridor.",
-//       "canOpen": {
-//         "open": false,
-//         "message": "The door is securely locked."
-//       },
-//       "canEnter": {
-//         "enter": false,
-//         "message": "You can't enter; the door is locked."
-//       },
-//       "canUnlock": {
-//         "unlock": true,
-//         "message": "Using the key, you successfully unlock the door.",
-//         "use": "key"
-//       },
-//       "state": "closed",
-//       "states": {
-//         "open": {
-//           "message": "The door swings open, marking your path to freedom.",
-//           "finish": true
-//         }
-//       }
-//     },
-//     {
-//       "id": "door_cell",
-//       "name": "door_cell",
-//       "description": "The entrance to your prison cell, firmly locked.",
-//       "state": "locked",
-//       "locationnext": "Corridor",
-//       "locationbefore": "CellPrison",
-//       "event": "angry_guard",
-//       "canOpen": {
-//         "open": false,
-//         "message": "The door is locked."
-//       },
-//       "canUnlock": {
-//         "unlock": true,
-//         "message": "With the keycell in hand, you unlock the door.",
-//         "use": "keycell"
-//       },
-//       "canEnter": {
-//         "enter": "Corridor",
-//         "message": "You successfully enter the corridor, leaving your cell behind.",
-//         "locationbefore": "CellPrison"
-//       },
-//       "states": {
-//         "open": {
-//           "message": "The door is open."
-//         },
-//         "closed": {
-//           "message": "The door is closed."
-//         }
-//       }
-//     },
-//     {
-//       "id": "guard",
-//       "name": "guard",
-//       "description": "A vigilant guard monitoring your every move.",
-//       "state": "normal",
-//       "canTalk": {
-//         "talk": true,
-//         "message": "You cautiously wake up the guard."
-//       },
-//       "states": {
-//         "angry": {
-//           "message": "The guard, now angered, ignores your presence."
-//         },
-//         "normal": {
-//           "message": "The guard remains vigilant and alert."
-//         },
-//         "sleep": {
-//           "message": "The guard appears to be sound asleep."
-//         }
-//       },
-//       "canSearch": {
-//         "search": {
-//           "items": ["key"],
-//           "message": "You search the guard and find a key concealed on their person."
-//         },
-//         "message": "You search the guard and discover a key hidden on their person."
-//       }
-//     }
-//   ],
-//   "event": [
-//     {
-//       "id": "angry_guard",
-//       "trigger": {
-//         "verb": ["open", "unlock", "enter"],
-//         "object": "door_cell"
-//       },
-//       "happen": false,
-//       "name": "angry_guard",
-//       "description": "The guard is alerted to your actions, becoming visibly angry.",
-//       "effects": [
-//         {
-//           "item": "guard",
-//           "state": "angry",
-//           "message": "Hey you prisoner! What are you doing?"
-//         },
-//         {
-//           "item": "door_cell",
-//           "state": "closed",
-//           "message": "The guard forcefully closes the door, restricting your actions.",
-//           "actions": {
-//             "canUnlock": {
-//               "unlock": false,
-//               "message": "The guard watches you closely, preventing any attempts to unlock or open the door."
-//             },
-//             "canOpen": {
-//               "open": false,
-//               "message": "The guard remains vigilant, making it impossible to open the door."
-//             },
-//             "canEnter": {
-//               "enter": false,
-//               "message": "The guard's watchful eyes prevent any attempts to enter the corridor."
-//             }
-//           }
-//         }
-//       ]
-//     },
-//     {
-//       "id": "wakeup_midnight",
-//       "trigger": {
-//         "verb": "sleep",
-//         "object": "bed"
-//       },
-//       "happen": false,
-//       "name": "Wake Up In Mid Night",
-//       "description": "You suddenly wake up in the eerie silence of midnight.",
-//       "disableevent": "angry_guard",
-//       "effects": [
-//         {
-//           "item": "guard",
-//           "state": "sleep",
-//           "message": "The guard is now sound asleep, granting you a moment of respite."
-//         },
-//         {
-//           "item": "door_cell",
-//           "state": "closed",
-//           "message": "Surprisingly, the door is now unlocked, providing an opportunity for your escape.",
-//           "actions": {
-//             "canOpen": {
-//               "open": false,
-//               "message": "The door is still locked."
-//             },
-//             "canUnlock": {
-//               "unlock": true,
-//               "message": "Utilizing the keycell, you successfully unlock the door.",
-//               "use": "keycell"
-//             },
-//             "canEnter": {
-//               "enter": "Corridor",
-//               "message": "Seizing the moment, you enter the corridor, leaving your cell behind.",
-//               "locationbefore": "CellPrison"
-//             }
-//           }
-//         }
-//       ]
-//     },
-//     {
-//       "id": "guard_wakeup",
-//       "trigger": {
-//         "verb": "talk",
-//         "object": "guard"
-//       },
-//       "happen": false,
-//       "name": "Guard Wakeup",
-//       "description": "You cautiously wake up the guard, triggering a sense of anger and hostility.",
-//       "MovePlayer": "CellPrison",
-//       "isOver": true,
-//       "effects": [
-//         {
-//           "item": "guard",
-//           "state": "angry",
-//           "message": "The guard, now angered, directs their attention towards you."
-//         },
-//         {
-//           "item": "door_cell",
-//           "state": "closed",
-//           "message": "The door remains locked, limiting your options.",
-//           "actions": {
-//             "canOpen": {
-//               "open": false,
-//               "message": "The door is securely locked."
-//             },
-//             "canUnlock": {
-//               "unlock": true,
-//               "message": "Utilizing the keycell, you successfully unlock the door.",
-//               "use": "keycell"
-//             },
-//             "canEnter": {
-//               "enter": "Corridor",
-//               "message": "Capitalizing on the unlocked door, you enter the corridor, leaving your cell behind.",
-//               "locationbefore": "CellPrison"
-//             }
-//           }
-//         }
-//       ]
-//     }
-//   ],
-//   "ARGAVER": "1.0.0"
-// }
-
 const fs = require("fs");
 const readline = require("readline");
 const PlayerManager = require("./PlayerManager");
@@ -532,6 +205,7 @@ class GameEngine {
       enter: (args) => this.enter(args[0]),
       help: () => this.help(),
       quit: () => this.quit(),
+      read: (args) => this.read(args[0]),
       sleep: (args) => this.sleep(args[0]),
       restart: () => this.loadGame("game/index.json"),
       eval: (args) =>
@@ -663,6 +337,29 @@ class GameEngine {
 
     itemIndexGame.canSearch.search = false;
     itemIndexGame.canSearch.message = `You already searched the ${item}`;
+  }
+
+  read(item) {
+    const itemIndexGame = this.findItemById(item);
+    if (this.lm.itemExistInLocation(item)) {
+      if (itemIndexGame.canRead) {
+        if (itemIndexGame.canRead.read) {
+          log(
+            itemIndexGame.canRead.message,
+            "fgGreen"
+          );
+        } else {
+          log(
+            itemIndexGame.canRead.message || `You can't read the ${item}`,
+            "fgRed"
+          );
+        }
+      } else {
+        log("You can't read the " + item, "fgRed");
+      }
+    } else {
+      log("You can't find the " + item, "fgRed");
+    }
   }
 
   sleep(item) {
