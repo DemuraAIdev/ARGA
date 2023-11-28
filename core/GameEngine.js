@@ -203,6 +203,7 @@ class GameEngine {
       unlock: (args) => this.unlock(args[0], args[1]),
       close: (args) => this.close(args[0]),
       enter: (args) => this.enter(args[0]),
+      use: (args) => this.use(args[0], args[1]),
       help: () => this.help(),
       quit: () => this.quit(),
       read: (args) => this.read(args[0]),
@@ -340,50 +341,38 @@ class GameEngine {
   }
 
   read(item) {
-    const itemIndexGame = this.findItemById(item);
-    if (this.lm.itemExistInLocation(item)) {
-      if (itemIndexGame.canRead) {
-        if (itemIndexGame.canRead.read) {
-          log(
-            itemIndexGame.canRead.message,
-            "fgGreen"
-          );
-        } else {
-          log(
-            itemIndexGame.canRead.message || `You can't read the ${item}`,
-            "fgRed"
-          );
-        }
-      } else {
-        log("You can't read the " + item, "fgRed");
-      }
-    } else {
-      log("You can't find the " + item, "fgRed");
+    const itemIndex = this.findItemById(item);
+  
+    if (!this.lm.itemExistInLocation(item)) {
+      log(`You can't find the ${item}`, "fgRed");
+      return;
     }
+  
+    if (!itemIndex.canRead || !itemIndex.canRead.read) {
+      log(`You can't read the ${item}`, "fgRed");
+      return;
+    }
+  
+    log(itemIndex.canRead.message || `You read the ${item}`, "fgGreen");
   }
+  
 
   sleep(item) {
-    const itemIndexGame = this.findItemById(item);
-    if (this.lm.itemExistInLocation(item)) {
-      if (itemIndexGame.canSleep) {
-        if (itemIndexGame.canSleep.sleep) {
-          log(
-            itemIndexGame.canSleep.message || `You sleep on the ${item}`,
-            "fgGreen"
-          );
-        } else {
-          log(
-            itemIndexGame.canSleep.message || `You can't sleep on the ${item}`,
-            "fgRed"
-          );
-        }
-      } else {
-        log("You can't sleep on the " + item, "fgRed");
-      }
-    } else {
-      log("You can't find the " + item, "fgRed");
+    const itemIndex = this.findItemById(item);
+  
+    if (!this.lm.itemExistInLocation(item)) {
+      log(`You can't find the ${item}`, "fgRed");
+      return;
     }
+  
+    if (!itemIndex.canSleep || !itemIndex.canSleep.sleep) {
+      log(`You can't sleep on the ${item}`, "fgRed");
+      return;
+    }
+  
+    log(itemIndex.canSleep.message || `You sleep on the ${item}`, "fgGreen");
   }
+  
 
   unlock(item, tool) {
     const itemIndexGame = this.findItemById(item);
