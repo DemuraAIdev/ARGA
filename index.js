@@ -1,4 +1,4 @@
-const GameEngine = require("./GameEngine");
+const GameEngine = require("./core/GameEngine");
 
 const game = new GameEngine();
 
