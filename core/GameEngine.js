@@ -3,10 +3,6 @@ const readline = require("readline");
 const PlayerManager = require("./PlayerManager");
 const LocationManager = require("./LocationManager");
 const { log, history } = require("../lib/Console");
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
 
 class GameEngine {
   constructor() {
@@ -28,32 +24,11 @@ class GameEngine {
       // parse to the variable data
       const data = fs.readFileSync(path, "utf8");
       // parse to the variable game
-      try {
-        this.game = JSON.parse(data);
-      } catch (error) {
-        if (error instanceof SyntaxError) {
-          // Handle the error, attempt to repair JSON, and then try parsing again
-          this.game = this.autoRepairJson(data);
-        } else {
-          // Handle other types of errors
-          return console.error("Error parsing JSON:", error.message);
-        }
-      }
+
+      this.game = JSON.parse(data);
 
       console.log(this.game);
-      this.progressBar(10);
       console.clear();
-      log(
-        `
-      ___    ____  _________ 
-      /   |  / __ \/ ____/   |
-     / /| | / /_/ / / __/ /| |
-    / ___ |/ _, _/ /_/ / ___ |
-   /_/  |_/_/ |_|\____/_/  |_|
-   ARGA GAME ENGINE
-          `,
-        "fgCyan"
-      );
 
       if (this.game.ARGAVER !== "1.0.0") {
         return log("ARGA VERSION INCOMPATIBLE", "fgBlack", "bgRed");
@@ -61,9 +36,7 @@ class GameEngine {
 
       // set the location
       this.lm.init(this.game.locations);
-      this.progressBar(20);
       this.lm.loadMap(this.game.start);
-      this.progressBar(50);
 
       this.player.location = this.lm.id;
 
@@ -71,7 +44,6 @@ class GameEngine {
       this.player.inventory = this.game.inventory;
       // set config
       this.config = this.game.config;
-      this.progressBar(100);
 
       // Display the welcome message
       log(`Welcome to ${this.game.name}! By ${this.game.author}`, "fgCyan");
@@ -86,44 +58,8 @@ class GameEngine {
       console.error("Error loading game:", error);
     }
 
-    process.on("uncaughtException", (err) => {
-      console.error("There was an uncaught error", err);
-      return this.gameLoop();
-    });
-
-    process.on("unhandledRejection", (reason, promise) => {
-      console.error("Unhandled Rejection at:", promise, "reason:", reason);
-      return this.gameLoop();
-    });
-
     // Wait for the game to load before running the game loop
-    await this.gameLoop();
-  }
-  autoRepairJson(jsonString) {
-    try {
-      // Parse and stringify to ensure a valid JSON string
-      const parsedJson = JSON.parse(jsonString);
-      return JSON.stringify(parsedJson);
-    } catch (e) {
-      // Handle parsing error (e.g., JSON is incomplete or invalid)
-      console.error("Error parsing JSON:", e.message);
-      return jsonString;
-    }
-  }
-
-  progressBar(progress) {
-    const barLength = 20;
-    const filledLength = Math.round(barLength * (progress / 100));
-    const bar = "█".repeat(filledLength) + "-".repeat(barLength - filledLength);
-
-    process.stdout.clearLine();
-    process.stdout.cursorTo(0);
-    process.stdout.write(`[${bar}] ${progress}%`);
-
-    if (progress === 100) {
-      process.stdout.clearLine();
-      process.stdout.write("\n");
-    }
+    // await this.gameLoop();
   }
 
   look() {
@@ -182,7 +118,7 @@ class GameEngine {
       }
       if (event.isOver) {
         log(this.game.gameovermessage);
-        return log("Input 'restart' to restart the game.", "fgGreen")
+        return log("Input 'restart' to restart the game.", "fgGreen");
       }
       event.happen = true;
       if (event.disableevent)
@@ -226,7 +162,7 @@ class GameEngine {
   }
 
   // game loop
-  gameLoop() {
+  gameLoop(rl) {
     rl.question(`${this.lm.name}> `, (input) => {
       this.handleInput(input);
       this.gameLoop();
@@ -242,7 +178,10 @@ class GameEngine {
     }
 
     if (!itemIndexGame.canOpen || !itemIndexGame.canOpen.open) {
-      log(itemIndexGame.canOpen.message || `You can't open the ${item}`, "fgRed");
+      log(
+        itemIndexGame.canOpen.message || `You can't open the ${item}`,
+        "fgRed"
+      );
       return;
     }
 
@@ -342,37 +281,35 @@ class GameEngine {
 
   read(item) {
     const itemIndex = this.findItemById(item);
-  
+
     if (!this.lm.itemExistInLocation(item)) {
       log(`You can't find the ${item}`, "fgRed");
       return;
     }
-  
+
     if (!itemIndex.canRead || !itemIndex.canRead.read) {
       log(`You can't read the ${item}`, "fgRed");
       return;
     }
-  
+
     log(itemIndex.canRead.message || `You read the ${item}`, "fgGreen");
   }
-  
 
   sleep(item) {
     const itemIndex = this.findItemById(item);
-  
+
     if (!this.lm.itemExistInLocation(item)) {
       log(`You can't find the ${item}`, "fgRed");
       return;
     }
-  
+
     if (!itemIndex.canSleep || !itemIndex.canSleep.sleep) {
       log(`You can't sleep on the ${item}`, "fgRed");
       return;
     }
-  
+
     log(itemIndex.canSleep.message || `You sleep on the ${item}`, "fgGreen");
   }
-  
 
   unlock(item, tool) {
     const itemIndexGame = this.findItemById(item);
