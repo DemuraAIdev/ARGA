@@ -5,6 +5,8 @@ const game = new GameEngine();
 const { log } = require("./lib/Console");
 const readline = require("readline");
 
+const games = fs.readdirSync("game");
+
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
@@ -12,18 +14,16 @@ const rl = readline.createInterface({
 
 // Function to list all games in the "game" folder
 function listGames() {
-  const gameFolder = path.join(__dirname, "game");
-  const games = fs.readdirSync(gameFolder);
   log(
     `
-
+        ARGA KERNEL LOADER
         █████╗ ██████╗  ██████╗  █████╗ 
         ██╔══██╗██╔══██╗██╔════╝ ██╔══██╗
         ███████║██████╔╝██║  ███╗███████║
         ██╔══██║██╔══██╗██║   ██║██╔══██║
         ██║  ██║██║  ██║╚██████╔╝██║  ██║
         ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝    
-        ARGA GAME ENGINE
+        ARGA GAME ENGINE 1.0.0
                 `,
     "fgCyan"
   );
@@ -36,13 +36,9 @@ function listGames() {
 
 // Function to load a game based on user input
 async function loadGame(gameIndex) {
-  const gameFolder = path.join(__dirname, "game");
-  const games = fs.readdirSync(gameFolder);
-
   if (gameIndex >= 1 && gameIndex <= games.length) {
     const selectedGame = games[gameIndex - 1];
-    const gamePath = path.join(gameFolder, selectedGame, "index.json");
-    await game.loadGame(gamePath);
+    await game.loadGame(`game/${selectedGame}/index.json`);
     game.gameLoop(); // Start the game loop after loading the game
   } else {
     console.log("Invalid game selection.");
@@ -73,13 +69,13 @@ game.gameLoop = function () {
 };
 
 process.on("uncaughtException", (err) => {
-  log("There was an uncaught error:", "fgWhite", "bgRed");
+  log("Game Engine error:", "fgWhite", "bgRed");
   log(err, "fgWhite", "bgRed");
   game.quit();
 });
 
 process.on("unhandledRejection", (reason, promise) => {
-  log("Unhandled Rejection at:", "fgWhite", "bgRed");
+  log("Game Engine : Unhandled Rejection at:", "fgWhite", "bgRed");
   log(promise, "fgWhite", "bgRed");
 
   game.quit();
@@ -90,4 +86,6 @@ process.on("unhandledRejection", (reason, promise) => {
 process.on("exit", async (code) => {
   log(`Kernel Rechive Game Engine Exit with code ${code}`, "fgWhite", "bgRed");
 
+  // make exit block
+  await new Promise((resolve) => setTimeout(resolve, 1000));
 });

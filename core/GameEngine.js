@@ -31,7 +31,8 @@ class GameEngine {
       console.clear();
 
       if (this.game.ARGAVER !== "1.0.0") {
-        return log("ARGA VERSION INCOMPATIBLE", "fgBlack", "bgRed");
+        log("ARGA VERSION INCOMPATIBLE", "fgBlack", "bgRed");
+        return process.exit();
       }
 
       // set the location
@@ -46,7 +47,7 @@ class GameEngine {
       this.config = this.game.config;
 
       // Display the welcome message
-      log(`Welcome to ${this.game.name}! By ${this.game.author}`, "fgCyan");
+      log(`Welcome to ${this.game.name}! By ${this.game.author} (${this.game.version})`, "fgCyan");
       log(this.game.description, "fgCyan");
       log(
         "Type 'help' for a list of commands, Type look for items in your location",
