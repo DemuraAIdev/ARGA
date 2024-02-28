@@ -1,5 +1,4 @@
 const fs = require("fs");
-const readline = require("readline");
 const PlayerManager = require("./PlayerManager");
 const LocationManager = require("./LocationManager");
 const TimeManager = require("./TimeManager");
@@ -88,14 +87,21 @@ class GameEngine {
 
   // handleInput
   handleInput(input) {
-    const [command, ...args] = input.toLowerCase().split(" ");
+    let correctedInput = input.toLowerCase();
+    let [command, ...args] = input.toLowerCase().split(" ");
     const allowedActions = this.config.allowedActions;
 
     if (!allowedActions.includes(command)) {
-      const item = this.findItemById(command);
-      return item
-        ? log(item.description, "fgGreen")
-        : log("You can't do that.", "fgRed");
+      const correctedCommand = this.autocorrectCommand(command, allowedActions);
+      log(`Autocorrect to ${correctedCommand}`, "fgYellow");
+      if (correctedCommand) {
+        command = correctedCommand;
+      } else {
+        const item = this.findItemById(command);
+        return item
+          ? log(item.description, "fgGreen")
+          : log("You can't do that.", "fgRed");
+      }
     }
 
     const event = this.game.event.find((event) => {
@@ -169,6 +175,57 @@ class GameEngine {
     } else {
       log("You can't do that.", "fgRed");
     }
+  }
+  autocorrectCommand(command, allowedActions) {
+    let closestMatch = null;
+    let minDistance = Infinity;
+
+    // Iterate through allowed actions to find the closest match
+    for (const action of allowedActions) {
+      const distance = this.calculateLevenshteinDistance(command, action);
+      if (distance < minDistance) {
+        closestMatch = action;
+        minDistance = distance;
+      }
+    }
+
+    // If the closest match is within a certain threshold, return it
+    if (minDistance <= 2) {
+      // Threshold for autocorrect, you can adjust this as needed
+      return closestMatch;
+    }
+
+    return null; // Return null if no suitable correction found
+  }
+
+  calculateLevenshteinDistance(s1, s2) {
+    // Function to calculate Levenshtein distance between two strings
+    const len1 = s1.length;
+    const len2 = s2.length;
+    const matrix = [];
+
+    // Initialize the matrix
+    for (let i = 0; i <= len1; i++) {
+      matrix[i] = [i];
+    }
+
+    for (let j = 0; j <= len2; j++) {
+      matrix[0][j] = j;
+    }
+
+    // Calculate Levenshtein distance
+    for (let i = 1; i <= len1; i++) {
+      for (let j = 1; j <= len2; j++) {
+        const cost = s1[i - 1] === s2[j - 1] ? 0 : 1;
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j] + 1,
+          matrix[i][j - 1] + 1,
+          matrix[i - 1][j - 1] + cost
+        );
+      }
+    }
+
+    return matrix[len1][len2];
   }
 
   // game loop
@@ -468,27 +525,38 @@ class GameEngine {
         await this.loadSave(save);
       });
     } else {
-      const data = fs.readFileSync(`save/${save}.json`, "utf8");
-      const { game, player, lm, history } = JSON.parse(data);
+      try {
+        const data = fs.readFileSync(`save/${save}.json`, "utf8");
+        let { game, player, lm, history } = JSON.parse(data);
 
-      this.game = game;
-      this.player.location = player.location;
-      this.player.inventory = player.inventory;
+        // Fix corrupt JSON data
+        game = game || {};
+        player = player || {};
+        lm = lm || {};
+        history = history || [];
 
-      this.lm.locations = lm.locations;
-      this.lm.id = lm.id;
-      this.lm.name = lm.name;
-      this.lm.description = lm.description;
-      this.lm.items = lm.items;
+        this.game = game;
+        this.player.location = player.location;
+        this.player.inventory = player.inventory;
 
-      // load history
-      this.history = history;
-      for (let hist of this.history) {
-        console.log(hist);
+        this.lm.locations = lm.locations;
+        this.lm.id = lm.id;
+        this.lm.name = lm.name;
+        this.lm.description = lm.description;
+        this.lm.items = lm.items;
+
+        // load history
+        this.history = history;
+        for (let hist of this.history) {
+          console.log(hist);
+        }
+
+        log("Game loaded.", "fgGreen");
+        return this.gameLoop();
+      } catch (error) {
+        log("Error loading save file.", "fgRed");
+        return this.gameLoop();
       }
-
-      log("Game loaded.", "fgGreen");
-      return this.gameLoop();
     }
   }
   help() {
