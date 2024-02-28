@@ -1,11 +1,14 @@
 {
-  "name": "Prison Break",
+  "name": "PrisonEscape",
   "author": "Abdul Vaiz",
   "version": "1.0.0",
   "start": "CellPrison",
   "description": "You find yourself confined in a dreary prison cell with only a bed, a desk, and a locked door. Your mission: Escape from this seemingly impenetrable prison.",
   "config": {
     "debug": true,
+    "time": {
+      "start": "1999-01-01T00:07:00"
+    },
     "allowedActions": [
       "take",
       "search",
@@ -20,6 +23,7 @@
       "quit",
       "look",
       "inventory",
+      "time",
       "use",
       "read",
       "drop",
@@ -93,6 +97,12 @@
         },
         "message": "You search the desk, revealing a closed drawer."
       }
+    },
+    {
+      "id": "clock",
+      "name": "clock",
+      "description": "Display a clock.",
+      "isClock": true
     },
     {
       "id": "drawer",

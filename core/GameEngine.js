@@ -2,6 +2,7 @@ const fs = require("fs");
 const readline = require("readline");
 const PlayerManager = require("./PlayerManager");
 const LocationManager = require("./LocationManager");
+const TimeManager = require("./TimeManager");
 const { log, history } = require("../lib/Console");
 
 class GameEngine {
@@ -12,6 +13,7 @@ class GameEngine {
     this.lm = new LocationManager(this);
     this.config = null;
     this.history = history;
+    this.time = new TimeManager();
   }
 
   /**
@@ -45,9 +47,15 @@ class GameEngine {
       this.player.inventory = this.game.inventory;
       // set config
       this.config = this.game.config;
+      // set time
+      this.time.start(this.config.time.start);
+      log(this.time.time, "fgGreen");
 
       // Display the welcome message
-      log(`Welcome to ${this.game.name}! By ${this.game.author} (${this.game.version})`, "fgCyan");
+      log(
+        `Welcome to ${this.game.name}! By ${this.game.author} (${this.game.version})`,
+        "fgCyan"
+      );
       log(this.game.description, "fgCyan");
       log(
         "Type 'help' for a list of commands, Type look for items in your location",
@@ -145,7 +153,8 @@ class GameEngine {
       quit: () => this.quit(),
       read: (args) => this.read(args[0]),
       sleep: (args) => this.sleep(args[0]),
-      restart: () => this.loadGame("game/index.json"),
+      restart: () => this.loadGame(`game/${game.name}/index.json`),
+      time: () => this.times(),
       eval: (args) =>
         this.config.debug
           ? this.eval(args.join(" "))
@@ -205,6 +214,10 @@ class GameEngine {
     if (itemIndexGame.canSearch?.search) {
       this.search(item);
     }
+  }
+
+  times() {
+    log(this.time.getCurrentTime(), "fgGreen");
   }
 
   take(items) {
