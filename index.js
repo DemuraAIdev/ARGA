@@ -32,19 +32,19 @@ function listGames() {
         ██╔══██║██╔══██╗██║   ██║██╔══██║
         ██║  ██║██║  ██║╚██████╔╝██║  ██║
         ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝    
-        ARGA GAME ENGINE 1.0.0
+        ARGA GAME ENGINE 2.0.0
                 `,
     "fgCyan"
   );
 
-  console.log("Available games:");
-  console.log("========================================");
-  console.log("0. Clone a new game");
-  console.log("u. Update all games");
-  console.log("d. Delete a game");
-  console.log("========================================");
+  log("Available games:");
+  log("========================================");
+  log("0. Download new game");
+  log("u. Update all games");
+  log("d. Delete a game");
+  log("========================================");
   games.forEach((game, index) => {
-    console.log(`${index + 1}. ${game}`);
+    log(`${index + 1}. ${game}`, "fgGreen");
   });
 }
 
