@@ -14,8 +14,6 @@ const { exec } = require("child_process");
   }
 });
 
-const games = fs.readdirSync("game");
-
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
@@ -23,6 +21,8 @@ const rl = readline.createInterface({
 
 // Function to list all games in the "game" folder
 function listGames() {
+  console.clear();
+  const games = fs.readdirSync("game");
   log(
     `
         ARGA KERNEL LOADER
@@ -38,6 +38,11 @@ function listGames() {
   );
 
   console.log("Available games:");
+  console.log("========================================");
+  console.log("0. Clone a new game");
+  console.log("u. Update all games");
+  console.log("d. Delete a game");
+  console.log("========================================");
   games.forEach((game, index) => {
     console.log(`${index + 1}. ${game}`);
   });
@@ -45,6 +50,8 @@ function listGames() {
 
 // Function to load a game based on user input
 async function loadGame(gameIndex) {
+  const games = fs.readdirSync("game");
+
   if (gameIndex >= 1 && gameIndex <= games.length) {
     const selectedGame = games[gameIndex - 1];
     await game.loadGame(`game/${selectedGame}/`);
@@ -114,25 +121,63 @@ async function getLatestRelease(owner, repo) {
       return null; // No release found or error occurred
     });
 }
+function deleteGame(gameIndex) {
+  const games = fs.readdirSync("game");
+
+  if (gameIndex >= 1 && gameIndex <= games.length) {
+    const gameToDelete = games[gameIndex - 1];
+    fs.rmdirSync(path.join("game", gameToDelete), { recursive: true });
+    return console.log(`Game ${gameToDelete} deleted successfully.`);
+  } else {
+    console.log("Invalid game selection.");
+  }
+}
 async function cloneGame(repoURL, dest) {
-  try {
-    await new Promise((resolve, reject) => {
-      exec(`git clone ${repoURL} ${dest}`, (error, stdout, stderr) => {
-        if (error) {
-          console.error(`Error cloning repository: ${error.message}`);
-          reject(error);
-          return;
-        }
-        if (stderr) {
-          console.error(`Cloning warning: ${stderr}`);
-        }
-        console.log(`Repository cloned successfully: ${repoURL}`);
-        resolve();
+  if (fs.existsSync(dest)) {
+    const update = await askQuestion(
+      "The game already exists. Do you want to update it? (y/n): "
+    );
+    if (update.toLowerCase() === "y") {
+      try {
+        await new Promise((resolve, reject) => {
+          exec(`git -C ${dest} pull`, (error, stdout, stderr) => {
+            if (error) {
+              console.error(`Error updating repository: ${error.message}`);
+              reject(error);
+              return;
+            }
+            if (stderr) {
+              console.error(`Updating warning: ${stderr}`);
+            }
+            console.log(`Repository updated successfully: ${repoURL}`);
+            resolve();
+          });
+        });
+      } catch (error) {
+        console.error("Error updating the game:", error);
+        throw error;
+      }
+    }
+  } else {
+    try {
+      await new Promise((resolve, reject) => {
+        exec(`git clone ${repoURL} ${dest}`, (error, stdout, stderr) => {
+          if (error) {
+            console.error(`Error cloning repository: ${error.message}`);
+            reject(error);
+            return;
+          }
+          if (stderr) {
+            console.error(`Cloning warning: ${stderr}`);
+          }
+          console.log(`Repository cloned successfully: ${repoURL}`);
+          resolve();
+        });
       });
-    });
-  } catch (error) {
-    console.error("Error cloning the game:", error);
-    throw error;
+    } catch (error) {
+      console.error("Error cloning the game:", error);
+      throw error;
+    }
   }
 }
 
@@ -149,29 +194,72 @@ function askQuestion(question) {
   });
 }
 
-askQuestion(
-  "Enter the number of the game you want to play or 0 to clone a new game: "
-).then(async (answer) => {
-  if (answer === "0") {
-    const gameList = await getGameList();
-    gameList.forEach((game, index) => {
-      console.log(`${index + 1}. ${game.name}`);
-    });
+function askQuestions() {
+  askQuestion(
+    "Enter the number of the game you want to play or 0 to clone a new game: "
+  ).then(async (answer) => {
+    if (answer === "0") {
+      const gameList = await getGameList();
+      gameList.forEach((game, index) => {
+        console.log(`${index + 1}. ${game.name}`);
+      });
 
-    const gameIndex = await askQuestion(
-      "Enter the number of the game you want to clone: "
-    );
-    const selectedGame = gameList[gameIndex - 1];
-    const url = selectedGame.repo_url;
-    const dest = `game/${selectedGame.name}`;
+      const gameIndex = await askQuestion(
+        "Enter the number of the game you want to clone: "
+      );
+      const selectedGame = gameList[gameIndex - 1];
+      const url = selectedGame.repo_url;
+      const dest = `game/${selectedGame.name}`;
 
-    console.log("Cloning the game repository, please wait...");
-    await cloneGame(url, dest);
-    console.log(`Game repository cloned to ${dest}`);
-  } else {
-    loadGame(parseInt(answer, 10));
-  }
-});
+      console.log("Cloning the game repository, please wait...");
+      await cloneGame(url, dest);
+      console.log(`Game repository cloned to ${dest}`);
+      listGames(); // List games after cloning
+      askQuestions();
+    } else if (answer.toLowerCase() === "u") {
+      console.log("Updating all game repositories, please wait...");
+      await updateAllGames();
+      console.log(`All game repositories updated`);
+      listGames(); // List games after updating
+      askQuestions();
+    } else if (answer.toLowerCase() === "d") {
+      const gameIndex = await askQuestion(
+        "Enter the number of the game you want to delete: "
+      );
+      deleteGame(parseInt(gameIndex, 10));
+      listGames(); // List games after deleting
+      askQuestions();
+    } else {
+      loadGame(parseInt(answer, 10));
+    }
+  });
+}
+
+askQuestions();
+
+function updateAllGames() {
+  const games = fs.readdirSync("game");
+
+  return Promise.all(
+    games.map((game) => {
+      const dest = `game/${game}`;
+      return new Promise((resolve, reject) => {
+        exec(`git -C ${dest} pull`, (error, stdout, stderr) => {
+          if (error) {
+            console.error(`Error updating repository: ${error.message}`);
+            reject(error);
+            return;
+          }
+          if (stderr) {
+            console.error(`Updating warning: ${stderr}`);
+          }
+          console.log(`Repository updated successfully: ${game}`);
+          resolve();
+        });
+      });
+    })
+  );
+}
 
 game.gameLoop = function () {
   rl.question(`${this.lm.name}> `, (input) => {
