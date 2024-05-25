@@ -32,7 +32,9 @@ class GameEngine {
       this.game = await partseJsonc(data);
 
       for (let manager in this.game.config.manager) {
-        const ManagerClass = require(`../${path}${this.game.config.manager[manager]}`);
+        const ManagerClass = require(`${process.cwd()}/${path}${
+          this.game.config.manager[manager]
+        }`);
         this[manager] = new ManagerClass(this.game);
         // make new instance of the manager
       }
