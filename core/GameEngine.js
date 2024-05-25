@@ -44,7 +44,7 @@ class GameEngine {
       console.log(this.game);
       console.clear();
 
-      if (this.game.ARGAVER !== "1.0.0") {
+      if (this.game.ARGAVER !== "2.0.0") {
         log("ARGA VERSION INCOMPATIBLE", "fgBlack", "bgRed");
         return process.exit();
       }
