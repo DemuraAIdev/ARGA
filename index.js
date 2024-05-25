@@ -66,13 +66,6 @@ async function getGameList() {
   const cacheFile = path.join("cache", "game_list.json");
 
   // Check if cache exists and is not older than 24 hours
-  if (fs.existsSync(cacheFile)) {
-    const stats = fs.statSync(cacheFile);
-    const age = Date.now() - stats.mtimeMs;
-    if (age < 24 * 60 * 60 * 1000) {
-      return JSON.parse(fs.readFileSync(cacheFile, "utf-8"));
-    }
-  }
 
   return fetch(
     "https://api.github.com/search/repositories?q=topic:arga-game-production",
@@ -106,19 +99,6 @@ async function getGameList() {
       log("Error fetching game list from GitHub:", "fgWhite", "bgRed");
       log(error.message, "fgWhite", "bgRed");
       throw error; // Rethrow the error after logging it.
-    });
-}
-
-async function getLatestRelease(owner, repo) {
-  return fetch(`https://api.github.com/repos/${owner}/${repo}/releases/latest`)
-    .then((res) => res.json())
-    .then((releaseInfo) => {
-      return {
-        tarball_url: releaseInfo.tarball_url,
-      };
-    })
-    .catch((error) => {
-      return null; // No release found or error occurred
     });
 }
 function deleteGame(gameIndex) {
