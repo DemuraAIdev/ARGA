@@ -39,6 +39,12 @@ class TimeManager {
     ); // Adjust for local time zone offset
     return localTime.toISOString().slice(0, 19).replace("T", " ");
   }
+
+  // func sleep one day wakeup default at 06:00
+  sleep(time = new Date().toISOString().slice(0, 10) + "T06:00:00") {
+    const sleepTime = new Date(time).getTime();
+    this.time = sleepTime;
+  }
 }
 
 module.exports = TimeManager;

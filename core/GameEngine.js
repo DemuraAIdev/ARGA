@@ -6,6 +6,7 @@ const {
   log,
   history,
   calculateLevenshteinDistance,
+  partseJsonc,
 } = require("../lib/Console");
 
 class GameEngine {
@@ -28,7 +29,7 @@ class GameEngine {
     try {
       // parse to the variable data
       const data = fs.readFileSync(path + "index.jsonc", "utf8");
-      this.game = JSON.parse(data);
+      this.game = await partseJsonc(data);
 
       for (let manager in this.game.config.manager) {
         const ManagerClass = require(`../${path}${this.game.config.manager[manager]}`);
@@ -370,6 +371,8 @@ class GameEngine {
     }
 
     log(itemIndex.canSleep?.message || `You sleep on the ${item}`, "fgGreen");
+    this.time.sleep(itemIndex.canSleep.timeWake || null);
+    log(`Now ${this.time.getCurrentTime()}`, "fgGreen");
   }
 
   unlock(item, tool) {

@@ -82,7 +82,8 @@
       },
       "canSleep": {
         "sleep": true,
-        "message": "You decide to take a moment to rest on the bed."
+        "message": "You decide to take a moment to rest on the bed.",
+        "timeWake": "1999-01-01T23:00:00"
       }
     },
     {

@@ -5,7 +5,7 @@ const test = require("node:test");
 
 test("Loading Game", (t) => {
   // This test passes because it does not throw an exception.
-  game.loadGame("game/PrisonEscape/index.json");
+  game.loadGame("game/PrisonEscape/");
 });
 
 test("Run Game #1", (t) => {
