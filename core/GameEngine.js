@@ -2,7 +2,11 @@ const fs = require("fs");
 const PlayerManager = require("./PlayerManager");
 const LocationManager = require("./LocationManager");
 const TimeManager = require("./TimeManager");
-const { log, history } = require("../lib/Console");
+const {
+  log,
+  history,
+  calculateLevenshteinDistance,
+} = require("../lib/Console");
 
 class GameEngine {
   constructor() {
@@ -23,10 +27,16 @@ class GameEngine {
   async loadGame(path) {
     try {
       // parse to the variable data
-      const data = fs.readFileSync(path, "utf8");
-      // parse to the variable game
-
+      const data = fs.readFileSync(path + "index.jsonc", "utf8");
       this.game = JSON.parse(data);
+
+      for (let manager in this.game.config.manager) {
+        const ManagerClass = require(`../${path}${this.game.config.manager[manager]}`);
+        this[manager] = new ManagerClass();
+        // make new instance of the manager
+      }
+
+      // parse to the variable game
 
       console.log(this.game);
       console.clear();
@@ -48,7 +58,7 @@ class GameEngine {
       this.config = this.game.config;
       // set time
       this.time.start(this.config.time.start);
-      log(this.time.time, "fgGreen");
+      log(this.time.getCurrentTime(), "fgGreen");
 
       // Display the welcome message
       log(
@@ -93,8 +103,8 @@ class GameEngine {
 
     if (!allowedActions.includes(command)) {
       const correctedCommand = this.autocorrectCommand(command, allowedActions);
-      log(`Autocorrect to ${correctedCommand}`, "fgYellow");
       if (correctedCommand) {
+        log(`Autocorrect to ${correctedCommand}`, "fgYellow");
         command = correctedCommand;
       } else {
         const item = this.findItemById(command);
@@ -156,11 +166,11 @@ class GameEngine {
       enter: (args) => this.enter(args[0]),
       use: (args) => this.use(args[0], args[1]),
       help: () => this.help(),
+      time: () => this.times(),
       quit: () => this.quit(),
       read: (args) => this.read(args[0]),
       sleep: (args) => this.sleep(args[0]),
-      restart: () => this.loadGame(`game/${game.name}/index.json`),
-      time: () => this.times(),
+      restart: () => this.loadGame(`game/${this.game.name}/`),
       eval: (args) =>
         this.config.debug
           ? this.eval(args.join(" "))
@@ -176,13 +186,18 @@ class GameEngine {
       log("You can't do that.", "fgRed");
     }
   }
+
+  times() {
+    log(this.time.getCurrentTime(), "fgGreen");
+  }
+
   autocorrectCommand(command, allowedActions) {
     let closestMatch = null;
     let minDistance = Infinity;
 
     // Iterate through allowed actions to find the closest match
     for (const action of allowedActions) {
-      const distance = this.calculateLevenshteinDistance(command, action);
+      const distance = calculateLevenshteinDistance(command, action);
       if (distance < minDistance) {
         closestMatch = action;
         minDistance = distance;
@@ -196,36 +211,6 @@ class GameEngine {
     }
 
     return null; // Return null if no suitable correction found
-  }
-
-  calculateLevenshteinDistance(s1, s2) {
-    // Function to calculate Levenshtein distance between two strings
-    const len1 = s1.length;
-    const len2 = s2.length;
-    const matrix = [];
-
-    // Initialize the matrix
-    for (let i = 0; i <= len1; i++) {
-      matrix[i] = [i];
-    }
-
-    for (let j = 0; j <= len2; j++) {
-      matrix[0][j] = j;
-    }
-
-    // Calculate Levenshtein distance
-    for (let i = 1; i <= len1; i++) {
-      for (let j = 1; j <= len2; j++) {
-        const cost = s1[i - 1] === s2[j - 1] ? 0 : 1;
-        matrix[i][j] = Math.min(
-          matrix[i - 1][j] + 1,
-          matrix[i][j - 1] + 1,
-          matrix[i - 1][j - 1] + cost
-        );
-      }
-    }
-
-    return matrix[len1][len2];
   }
 
   // game loop
@@ -246,7 +231,7 @@ class GameEngine {
 
     if (!itemIndexGame.canOpen || !itemIndexGame.canOpen.open) {
       log(
-        itemIndexGame.canOpen.message || `You can't open the ${item}`,
+        itemIndexGame?.canOpen?.errorMessage || `You can't open the ${item}`,
         "fgRed"
       );
       return;
@@ -266,15 +251,11 @@ class GameEngine {
       return this.enter(item);
     }
 
-    log(itemIndexGame.canOpen.message || `You open the ${item}`, "fgGreen");
+    log(itemIndexGame?.canOpen?.message || `You open the ${item}`, "fgGreen");
 
     if (itemIndexGame.canSearch?.search) {
       this.search(item);
     }
-  }
-
-  times() {
-    log(this.time.getCurrentTime(), "fgGreen");
   }
 
   take(items) {
@@ -285,7 +266,7 @@ class GameEngine {
 
     const item = this.findItemById(items);
     if (!item || !item.canTake || !item.canTake.take) {
-      log(`You can't take the ${item.name}`, "fgRed");
+      log(item.canTake?.errorMessage || `You can't take the ${items}`, "fgRed");
       return;
     }
 
@@ -319,13 +300,16 @@ class GameEngine {
     }
 
     if (!itemIndexGame.canSearch) {
-      log(`You can't search the ${item}`, "fgRed");
+      log(
+        itemIndexGame.canSearch.errorMessage || `You can't search the ${item}`,
+        "fgRed"
+      );
       return;
     }
 
     if (!itemIndexGame.canSearch.search) {
       log(
-        itemIndexGame.canSearch.message || `You can't search the ${item}`,
+        itemIndexGame.canSearch.errorMessage || `You can't search the ${item}`,
         "fgRed"
       );
       return;
@@ -359,11 +343,14 @@ class GameEngine {
     }
 
     if (!itemIndex.canRead || !itemIndex.canRead.read) {
-      log(`You can't read the ${item}`, "fgRed");
+      log(
+        itemIndex.canRead?.errorMessage || `You can't read the ${item}`,
+        "fgRed"
+      );
       return;
     }
 
-    log(itemIndex.canRead.message || `You read the ${item}`, "fgGreen");
+    log(itemIndex.canRead?.message || `You read the ${item}`, "fgGreen");
   }
 
   sleep(item) {
@@ -375,24 +362,32 @@ class GameEngine {
     }
 
     if (!itemIndex.canSleep || !itemIndex.canSleep.sleep) {
-      log(`You can't sleep on the ${item}`, "fgRed");
+      log(
+        itemIndex.canSleep?.errorMessage || `You can't sleep on the ${item}`,
+        "fgRed"
+      );
       return;
     }
 
-    log(itemIndex.canSleep.message || `You sleep on the ${item}`, "fgGreen");
+    log(itemIndex.canSleep?.message || `You sleep on the ${item}`, "fgGreen");
   }
 
   unlock(item, tool) {
     const itemIndexGame = this.findItemById(item);
 
     if (!this.lm.itemExistInLocation(item)) {
-      return log(`You can't find the ${item}`, "fgRed");
+      log(`You can't find the ${item}`, "fgRed");
+      return false;
     }
 
     const canUnlock = itemIndexGame.canUnlock;
 
     if (!canUnlock || !canUnlock.unlock) {
-      return log(canUnlock?.message || `You can't unlock the ${item}`, "fgRed");
+      return log(
+        canUnlock?.errorMessage ||
+          `You can't unlock the ${item} you need a key.`,
+        "fgRed"
+      );
     }
 
     const requiredTool = canUnlock.use;
@@ -406,7 +401,7 @@ class GameEngine {
       return log(`You can't unlock`, "fgRed");
     }
 
-    log(canUnlock.message || `You unlock the ${item} with ${tool}`, "fgGreen");
+    log(canUnlock?.message || `You unlock the ${item} with ${tool}`, "fgGreen");
 
     // if (itemIndexGame.states.open.items) {
     //   this.lm.addItemsToLocation(itemIndexGame.states.open.items);
@@ -416,6 +411,7 @@ class GameEngine {
       itemIndexGame.canOpen.open = true;
       this.open(item);
     }
+    return true;
   }
 
   close(item) {
@@ -430,7 +426,8 @@ class GameEngine {
           itemIndexGame.state = "closed";
         } else {
           log(
-            itemIndexGame.canClose.message || `You can't close the ${item}`,
+            itemIndexGame.canClose.errorMessage ||
+              `You can't close the ${item}`,
             "fgRed"
           );
         }
@@ -457,7 +454,10 @@ class GameEngine {
 
     // Check if the item can be entered
     if (!itemIndexGame.canEnter || !itemIndexGame.canEnter.enter) {
-      log(`You can't enter the ${item}`, "fgRed");
+      log(
+        itemIndexGame.canEnter?.errorMessage || `You can't enter the ${item}`,
+        "fgRed"
+      );
       return;
     }
 
@@ -481,13 +481,23 @@ class GameEngine {
     this.look();
   }
   debug() {
-    log(JSON.stringify(this), "fgGreen");
+    const seen = new WeakSet();
+    const replacer = (key, value) => {
+      if (typeof value === "object" && value !== null) {
+        if (seen.has(value)) {
+          return "[Circular]";
+        }
+        seen.add(value);
+      }
+      return value;
+    };
+    log(this, "fgGreen");
   }
 
   eval(code) {
     try {
       const result = eval(code);
-      log(JSON.stringify(result), "fgGreen");
+      console.log(result);
     } catch (error) {
       log(error, "fgRed");
     }

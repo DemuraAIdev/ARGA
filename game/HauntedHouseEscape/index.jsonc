@@ -1,0 +1,349 @@
+{
+  "name": "HauntedHouseEscape",
+  "author": "Abdul Vaiz",
+  "version": "1.0.0",
+  "start": "LivingRoom",
+  "description": "You find yourself trapped in a haunted house with eerie noises and creepy shadows. Your mission: Find your way out of this haunted place.",
+  "config": {
+    "debug": true,
+    "time": {
+      "start": "2024-05-24T21:00:00"
+    },
+    "allowedActions": [
+      "take",
+      "search",
+      "open",
+      "close",
+      "enter",
+      "eval",
+      "unlock",
+      "sleep",
+      "help",
+      "save",
+      "load",
+      "quit",
+      "look",
+      "inventory",
+      "time",
+      "read",
+      "drop",
+      "talk",
+      "restart"
+    ],
+    "ActionDescription": {
+      "take": "[item] Take an item",
+      "search": "[item] Search an item",
+      "open": "[item] Open an item",
+      "close": "[item] Close an item",
+      "enter": "[item] Enter a location",
+      "read": "[item] Read an item",
+      "unlock": "[item] Unlock an item",
+      "sleep": "[item] Sleep on an item",
+      "help": "Display help",
+      "save": "Save game",
+      "load": "Load game",
+      "quit": "Quit game",
+      "look": "Look around",
+      "inventory": "Display inventory",
+      "drop": "[item] Drop an item",
+      "talk": "[object] Talk to an item",
+      "restart": "Restart game"
+    }
+  },
+  "inventory": [],
+  "finishmessage": "Congratulations! You've successfully escaped the haunted house.",
+  "gameovermessage": "Game Over",
+  "locations": [
+    {
+      "id": "LivingRoom",
+      "name": "Living Room",
+      "description": "A dark and eerie living room with a dusty couch, an old bookshelf, and a locked door. The only light comes from a flickering candle.",
+      "items": ["couch", "bookshelf", "door_living"]
+    },
+    {
+      "id": "Library",
+      "name": "Library",
+      "description": "A dimly lit library filled with ancient books and an ominous aura. There might be something useful here.",
+      "items": ["bookshelf", "door_library", "ghost"]
+    }
+  ],
+  "item": [
+    {
+      "id": "couch",
+      "name": "couch",
+      "description": "A dusty old couch that seems to have been untouched for years.",
+      "canTake": {
+        "take": false,
+        "errorMessage": "The couch is too heavy to take with you."
+      },
+      "canSearch": {
+        "search": {
+          "items": ["key_living"],
+          "message": "You search the couch and find a small key hidden under the cushion."
+        },
+        "message": "You search the couch and discover a small key hidden under the cushion."
+      },
+      "canSleep": {
+        "sleep": true,
+        "message": "You decide to rest on the couch for a while."
+      }
+    },
+    {
+      "id": "bookshelf",
+      "name": "bookshelf",
+      "description": "A tall bookshelf filled with dusty old books.",
+      "canSearch": {
+        "search": {
+          "items": ["book"],
+          "message": "You search the bookshelf and find a peculiar book that stands out."
+        },
+        "message": "You search the bookshelf and discover a peculiar book that stands out."
+      }
+    },
+    {
+      "id": "clock",
+      "name": "clock",
+      "description": "Display a clock.",
+      "function": "time"
+    },
+    {
+      "id": "book",
+      "name": "book",
+      "description": "An old book with a mysterious symbol on the cover.",
+      "canRead": {
+        "read": true,
+        "message": "The book contains a cryptic message: 'The key to freedom lies beneath the couch.'"
+      }
+    },
+    {
+      "id": "key",
+      "name": "key",
+      "description": "A key crucial for unlocking the library door.",
+      "canTake": {
+        "take": true,
+        "message": "You take the key, realizing it might be useful."
+      }
+    },
+    {
+      "id": "key_living",
+      "name": "Living Room Key",
+      "description": "A small key found under the couch, it looks like it can unlock the door to the library.",
+      "canTake": {
+        "take": true,
+        "message": "You take the small key, hoping it will help you escape."
+      }
+    },
+    {
+      "id": "door_library",
+      "name": "door_library",
+      "description": "A locked door leading to the library.",
+      "canOpen": {
+        "open": false,
+        "message": "The door is securely locked.",
+        "errorMessage": "The door is securely locked."
+      },
+      "canEnter": {
+        "enter": false,
+        "message": "You can't enter; the door is locked.",
+        "errorMessage": "You can't enter; the door is locked."
+      },
+      "canUnlock": {
+        "unlock": true,
+        "message": "Using the small key, you successfully unlock the door.",
+        "errorMessage": "You need a key.",
+        "use": "key_living"
+      },
+      "state": "closed",
+      "states": {
+        "open": {
+          "message": "The door swings open, revealing the library.",
+          "finish": true
+        }
+      }
+    },
+
+    {
+      "id": "door_living",
+      "name": "door_living",
+      "description": "The door to the living room, locked tightly.",
+      "state": "locked",
+      "locationnext": "Library",
+      "locationbefore": "LivingRoom",
+      "event": "angry_ghost",
+      "canOpen": {
+        "open": false,
+        "message": "The door is locked.",
+        "errorMessage": "The door is locked."
+      },
+      "canUnlock": {
+        "unlock": true,
+        "message": "With the living room key, you unlock the door.",
+        "errorMessage": "You need a key.",
+        "use": "key_living"
+      },
+      "canEnter": {
+        "enter": "Library",
+        "message": "You successfully enter the library, leaving the living room behind.",
+        "locationbefore": "LivingRoom"
+      },
+      "states": {
+        "open": {
+          "message": "The door is open."
+        },
+        "closed": {
+          "message": "The door is closed."
+        }
+      }
+    },
+    {
+      "id": "ghost",
+      "name": "ghost",
+      "description": "A ghostly figure that roams the library, watching your every move.",
+      "state": "normal",
+      "canTalk": {
+        "talk": true,
+        "message": "You try to talk to the ghost, but it just stares at you silently."
+      },
+      "states": {
+        "angry": {
+          "message": "The ghost becomes agitated and starts to move towards you menacingly."
+        },
+        "normal": {
+          "message": "The ghost watches you silently."
+        },
+        "sleep": {
+          "message": "The ghost seems to be in a dormant state."
+        }
+      },
+      "canSearch": {
+        "search": {
+          "items": ["key"],
+          "message": "You search the ghost and find a key concealed within its ethereal form."
+        },
+        "message": "You search the ghost and discover a key hidden within its ethereal form."
+      }
+    }
+  ],
+  "event": [
+    {
+      "id": "angry_ghost",
+      "trigger": {
+        "verb": ["open", "unlock", "enter"],
+        "object": "door_living"
+      },
+      "happen": false,
+      "name": "angry_ghost",
+      "description": "The ghost is alerted to your actions, becoming visibly angry.",
+      "effects": [
+        {
+          "item": "ghost",
+          "state": "angry",
+          "message": "The ghost hovers closer to you, its anger palpable."
+        },
+        {
+          "item": "door_living",
+          "state": "locked",
+          "message": "The ghost's presence locks the door again, preventing your escape.",
+          "actions": {
+            "canUnlock": {
+              "unlock": false,
+              "errorMessage": "The ghost's presence prevents you from unlocking the door."
+            },
+            "canOpen": {
+              "open": false,
+              "errorMessage": "The ghost's presence prevents you from opening the door."
+            },
+            "canEnter": {
+              "enter": false,
+              "errorMessage": "The ghost's presence prevents you from entering the library."
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "midnight_slumber",
+      "trigger": {
+        "verb": "sleep",
+        "object": "couch"
+      },
+      "happen": false,
+      "name": "Midnight Slumber",
+      "description": "You fall into a deep sleep on the couch and wake up at midnight.",
+      "disableevent": "angry_ghost",
+      "effects": [
+        {
+          "item": "ghost",
+          "state": "sleep",
+          "message": "The ghost seems to be in a dormant state, giving you a chance to escape."
+        },
+        {
+          "item": "door_living",
+          "state": "locked",
+          "message": "The door is locked, but the ghost's dormancy gives you hope.",
+          "actions": {
+            "canOpen": {
+              "open": false,
+              "message": "The door is locked.",
+              "errorMessage": "The door is locked."
+            },
+            "canUnlock": {
+              "unlock": true,
+              "message": "With the living room key, you successfully unlock the door.",
+              "errorMessage": "You need a key.",
+              "use": "key_living"
+            },
+            "canEnter": {
+              "enter": "Library",
+              "message": "Taking advantage of the ghost's dormancy, you enter the library.",
+              "locationbefore": "LivingRoom"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "ghost_wakeup",
+      "trigger": {
+        "verb": "talk",
+        "object": "ghost"
+      },
+      "happen": false,
+      "name": "Ghost Wakeup",
+      "description": "You try to communicate with the ghost, triggering its anger.",
+      "MovePlayer": "LivingRoom",
+      "isOver": true,
+      "effects": [
+        {
+          "item": "ghost",
+          "state": "angry",
+          "message": "The ghost becomes enraged, its haunting presence intensifying."
+        },
+        {
+          "item": "door_living",
+          "state": "closed",
+          "message": "The door remains locked, limiting your options.",
+          "actions": {
+            "canOpen": {
+              "open": false,
+              "message": "The door is securely locked.",
+              "errorMessage": "The ghost's presence prevents you from opening the door."
+            },
+            "canUnlock": {
+              "unlock": true,
+              "message": "With the living room key, you unlock the door.",
+              "errorMessage": "The ghost's presence prevents you from unlocking the door.",
+              "use": "key_living"
+            },
+            "canEnter": {
+              "enter": "Library",
+              "message": "You enter the library, evading the ghost.",
+              "locationbefore": "LivingRoom"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "ARGAVER": "1.0.0"
+}

@@ -5,7 +5,7 @@ const test = require("node:test");
 
 test("Loading Game", (t) => {
   // This test passes because it does not throw an exception.
-  game.loadGame("game/index.json");
+  game.loadGame("game/PrisonEscape/index.json");
 });
 
 test("Run Game #1", (t) => {
@@ -29,6 +29,11 @@ test("Run Game #2", (t) => {
 });
 
 test("Save Game", (t) => {
-    // This test passes because it does not throw an exception.
-    game.save("test");
-  });
+  // This test passes because it does not throw an exception.
+  game.save("test");
+});
+
+test("Load Game", (t) => {
+  // This test passes because it does not throw an exception.
+  game.loadSave("test");
+});

@@ -38,7 +38,7 @@ function listGames() {
 async function loadGame(gameIndex) {
   if (gameIndex >= 1 && gameIndex <= games.length) {
     const selectedGame = games[gameIndex - 1];
-    await game.loadGame(`game/${selectedGame}/index.json`);
+    await game.loadGame(`game/${selectedGame}/`);
     game.gameLoop(); // Start the game loop after loading the game
   } else {
     console.log("Invalid game selection.");
