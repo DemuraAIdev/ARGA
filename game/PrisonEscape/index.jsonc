@@ -97,7 +97,8 @@
       "canSearch": {
         "search": {
           "items": ["drawer", "paper"],
-          "message": "You search the desk and discover a closed drawer."
+          "message": "You search the desk and discover a closed drawer.",
+          "errorMessage": "You've already searched the desk."
         },
         "message": "You search the desk, revealing a closed drawer."
       }
@@ -113,7 +114,8 @@
       "canSearch": {
         "search": {
           "items": ["keycell"],
-          "message": "Your search reveals a key hidden in the drawer."
+          "message": "Your search reveals a key hidden in the drawer.",
+          "errorMessage": "You've already searched the drawer."
         },
         "message": "You can't search the drawer, but you can open it (command: open drawer)."
       },
@@ -248,7 +250,8 @@
       "canSearch": {
         "search": {
           "items": ["key"],
-          "message": "You search the guard and find a key concealed on their person."
+          "message": "You search the guard and find a key concealed on their person.",
+          "errorMessage": "You've already searched the guard."
         },
         "message": "You search the guard and discover a key hidden on their person."
       }

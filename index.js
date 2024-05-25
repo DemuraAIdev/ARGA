@@ -1,16 +1,11 @@
 const fs = require("fs");
 const zlib = require("zlib");
 const path = require("path");
-const stream = require("stream");
-const util = require("util");
-const pipeline = util.promisify(stream.pipeline);
 const GameEngine = require("./core/GameEngine");
 const game = new GameEngine();
 const { log } = require("./lib/Console");
 const readline = require("readline");
-const { mkdir } = require("fs/promises");
-const { Readable } = require("stream");
-const { finished } = require("stream/promises");
+const { exec } = require("child_process");
 
 // Create necessary folders if they do not exist
 ["game", "save", "cache"].forEach((dir) => {
@@ -77,7 +72,6 @@ async function getGameList() {
     {
       headers: {
         "User-Agent": "node.js",
-        Accept: "application/vnd.github.v3+json",
       },
     }
   )
@@ -93,7 +87,7 @@ async function getGameList() {
         if (release) {
           gameList.push({
             name: repo.name,
-            tarball_url: release.tarball_url,
+            repo_url: repo.html_url,
           });
         }
       }
@@ -109,14 +103,7 @@ async function getGameList() {
 }
 
 async function getLatestRelease(owner, repo) {
-  return fetch(
-    `https://api.github.com/repos/${owner}/${repo}/releases/latest`,
-    {
-      headers: {
-        "User-Agent": "node.js",
-      },
-    }
-  )
+  return fetch(`https://api.github.com/repos/${owner}/${repo}/releases/latest`)
     .then((res) => res.json())
     .then((releaseInfo) => {
       return {
@@ -127,34 +114,30 @@ async function getLatestRelease(owner, repo) {
       return null; // No release found or error occurred
     });
 }
-
-// Function to download the tar.gz file of the latest release of the selected repository
-async function downloadGame(url, dest) {
-  const response = await fetch(url).then((res) => {
-    if (!res.ok) {
-      throw new Error(`Failed to get '${url}' (${res.status})`);
-    }
-    return res;
-  });
-  if (!response.ok) {
-    throw new Error(`Failed to get '${url}' (${response.status})`);
+async function cloneGame(repoURL, dest) {
+  try {
+    await new Promise((resolve, reject) => {
+      exec(`git clone ${repoURL} ${dest}`, (error, stdout, stderr) => {
+        if (error) {
+          console.error(`Error cloning repository: ${error.message}`);
+          reject(error);
+          return;
+        }
+        if (stderr) {
+          console.error(`Cloning warning: ${stderr}`);
+        }
+        console.log(`Repository cloned successfully: ${repoURL}`);
+        resolve();
+      });
+    });
+  } catch (error) {
+    console.error("Error cloning the game:", error);
+    throw error;
   }
-
-  const fileStream = fs.createWriteStream(dest);
-  await new Promise((resolve, reject) => {
-    response.body.pipe(fileStream);
-    response.body.on("error", (err) => {
-      reject(err);
-    });
-    fileStream.on("finish", () => {
-      resolve();
-    });
-  });
 }
 
 // List all games
 listGames();
-
 function askQuestion(question) {
   return new Promise((resolve) =>
     rl.question(question, (answer) => {
@@ -167,36 +150,24 @@ function askQuestion(question) {
 }
 
 askQuestion(
-  "Enter the number of the game you want to play or 0 to download a new game: "
+  "Enter the number of the game you want to play or 0 to clone a new game: "
 ).then(async (answer) => {
   if (answer === "0") {
-    // try {
     const gameList = await getGameList();
     gameList.forEach((game, index) => {
       console.log(`${index + 1}. ${game.name}`);
     });
 
     const gameIndex = await askQuestion(
-      "Enter the number of the game you want to download: "
+      "Enter the number of the game you want to clone: "
     );
     const selectedGame = gameList[gameIndex - 1];
-    const url = selectedGame.tarball_url;
-    const dest = `game/${selectedGame.name}.tar.gz`;
+    const url = selectedGame.repo_url;
+    const dest = `game/${selectedGame.name}`;
 
-    console.log("Downloading the game, please wait...");
-    await downloadGame(url, dest);
-    console.log(`Game downloaded to ${dest}`);
-
-    // Optionally, update the game list to include the new download
-    games.push(selectedGame.name);
-    // } catch (error) {
-    //   log(
-    //     "An error occurred while downloading the game:",
-    //     error,
-    //     "fgWhite",
-    //     "bgRed"
-    //   );
-    // }
+    console.log("Cloning the game repository, please wait...");
+    await cloneGame(url, dest);
+    console.log(`Game repository cloned to ${dest}`);
   } else {
     loadGame(parseInt(answer, 10));
   }
@@ -209,16 +180,6 @@ game.gameLoop = function () {
   });
 };
 
-class TarExtractor {
-  static async extract(source, destination) {
-    await pipeline(
-      fs.createReadStream(source),
-      zlib.createGunzip(),
-      fs.createWriteStream(destination)
-    );
-  }
-}
-
 process.on("uncaughtException", (err) => {
   log("Game Engine error:", "fgWhite", "bgRed");
   log(err, "fgWhite", "bgRed");
@@ -226,9 +187,11 @@ process.on("uncaughtException", (err) => {
 });
 
 process.on("unhandledRejection", (reason, promise) => {
+  log("========================================", "fgWhite", "bgRed");
   log("Game Engine : Unhandled Rejection at:", "fgWhite", "bgRed");
-  log("Reason: ", reason, "fgWhite", "bgRed");
-  log("Promise: ", promise, "fgWhite", "bgRed");
+  log(`Reason: ${reason}`, "fgWhite", "bgRed");
+  log(`Promise: ${promise}`, "fgWhite", "bgRed");
+  log("========================================", "fgWhite", "bgRed");
 
   game.quit();
 });

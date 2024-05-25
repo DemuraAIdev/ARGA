@@ -88,7 +88,11 @@ class GameEngine {
     // await this.gameLoop();
   }
 
-  look() {
+  look(args) {
+    if (args) {
+      return this.search(args);
+    }
+
     log(this.lm.name, "fgGreen");
     log(this.lm.description, "fgGreen");
     if (this.lm.items.length > 0) {
@@ -163,7 +167,7 @@ class GameEngine {
     // }
 
     const commandMap = {
-      look: () => this.look(),
+      look: () => this.look(args[0]),
       open: (args) => this.open(args[0]),
       take: (args) => this.take(args[0]),
       inventory: () => this.inventory(),
@@ -307,41 +311,29 @@ class GameEngine {
       return;
     }
 
-    if (!itemIndexGame.canSearch) {
-      log(
-        itemIndexGame.canSearch.errorMessage || `You can't search the ${item}`,
-        "fgRed"
-      );
+    const { canSearch } = itemIndexGame;
+    if (!canSearch || !canSearch.search) {
+      log(canSearch?.errorMessage || `You can't search the ${item}`, "fgRed");
       return;
     }
 
-    if (!itemIndexGame.canSearch.search) {
-      log(
-        itemIndexGame.canSearch.errorMessage || `You can't search the ${item}`,
-        "fgRed"
-      );
-      return;
-    }
+    log(canSearch.search.message || `You search the ${item}`, "fgGreen");
 
-    log(
-      itemIndexGame.canSearch.search.message || `You search the ${item}`,
-      "fgGreen"
-    );
-
-    if (itemIndexGame.canSearch.search.items) {
-      if (itemIndexGame.canSearch.search.items.length === 0) {
+    const { items } = canSearch.search;
+    if (items) {
+      if (items.length === 0) {
         log(`You didn't find anything`, "fgYellow");
       } else {
         log(`You find :`, "fgYellow");
-        this.arraytoList(itemIndexGame.canSearch.search.items);
-        this.lm.addItemsToLocation(itemIndexGame.canSearch.search.items);
+        this.arraytoList(items);
+        this.lm.addItemsToLocation(items);
       }
     }
 
-    itemIndexGame.canSearch.search = false;
-    itemIndexGame.canSearch.message = `You already searched the ${item}`;
+    canSearch.search = false;
+    canSearch.errorMessage =
+      canSearch.errorMessage || `You already searched the ${item}`;
   }
-
   read(item) {
     const itemIndex = this.findItemById(item);
 

@@ -45,6 +45,10 @@ class TimeManager {
     const sleepTime = new Date(time).getTime();
     this.time = sleepTime;
   }
+
+  getCurrentTimeRaw() {
+    return this.time;
+  }
 }
 
 module.exports = TimeManager;
