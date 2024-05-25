@@ -25,6 +25,7 @@
       "look",
       "inventory",
       "time",
+      "eval",
       "read",
       "drop",
       "talk",
@@ -48,6 +49,9 @@
       "drop": "[item] Drop an item",
       "talk": "[object] Talk to an item",
       "restart": "Restart game"
+    },
+    "manager": {
+      "test": "test.js"
     }
   },
   "inventory": [],

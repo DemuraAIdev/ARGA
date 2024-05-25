@@ -33,7 +33,7 @@ class GameEngine {
 
       for (let manager in this.game.config.manager) {
         const ManagerClass = require(`../${path}${this.game.config.manager[manager]}`);
-        this[manager] = new ManagerClass();
+        this[manager] = new ManagerClass(this.game);
         // make new instance of the manager
       }
 
@@ -59,6 +59,11 @@ class GameEngine {
       this.config = this.game.config;
       // set time
       this.time.start(this.config.time.start);
+
+      this.game.lmC = this.lm;
+      this.game.playerC = this.player;
+      this.game.timeC = this.time;
+
       log(this.time.getCurrentTime(), "fgGreen");
 
       // Display the welcome message
