@@ -25,7 +25,7 @@ function listGames() {
   const games = fs.readdirSync("game");
   log(
     `
-        ARGA KERNEL LOADER
+        ARGA GAME LAUNCHER
         █████╗ ██████╗  ██████╗  █████╗ 
         ██╔══██╗██╔══██╗██╔════╝ ██╔══██╗
         ███████║██████╔╝██║  ███╗███████║
@@ -58,6 +58,9 @@ async function loadGame(gameIndex) {
     game.gameLoop(); // Start the game loop after loading the game
   } else {
     console.log("Invalid game selection.");
+
+    // List games again if the selection is invalid
+    askQuestions();
   }
 }
 
@@ -101,8 +104,9 @@ async function getGameList() {
     })
     .catch((error) => {
       log("Error fetching game list from GitHub:", "fgWhite", "bgRed");
-      log(error.message, "fgWhite", "bgRed");
-      throw error; // Rethrow the error after logging it.
+      log(error, "fgWhite", "bgRed");
+      log("Loading games from cache...", "fgWhite", "bgRed");
+      return JSON.parse(fs.readFileSync(cacheFile, "utf-8"));
     });
 }
 
