@@ -30,7 +30,8 @@ class GameEngine {
       // parse to the variable data
       const data = fs.readFileSync(path + "index.jsonc", "utf8");
       this.game = await partseJsonc(data);
-
+      console.log(this.game);
+      console.clear();
       for (let manager in this.game.config.manager) {
         const ManagerClass = require(`${process.cwd()}/${path}${
           this.game.config.manager[manager]
@@ -40,9 +41,6 @@ class GameEngine {
       }
 
       // parse to the variable game
-
-      console.log(this.game);
-      console.clear();
 
       if (this.game.ARGAVER !== "2.0.0") {
         log("ARGA VERSION INCOMPATIBLE", "fgBlack", "bgRed");
@@ -126,7 +124,7 @@ class GameEngine {
       }
     }
 
-    const event = this.game.event.find((event) => {
+    const event = this.game?.event?.find((event) => {
       const triggerVerb = event.trigger.verb;
       return (
         triggerVerb &&

@@ -259,7 +259,8 @@ game.gameLoop = function () {
 
 process.on("uncaughtException", (err) => {
   log("Game Engine error:", "fgWhite", "bgRed");
-  log(err, "fgWhite", "bgRed");
+  // at
+  log(err.stack, "fgWhite", "bgRed");
   game.quit();
 });
 
