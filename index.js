@@ -68,15 +68,6 @@ async function loadGame(gameIndex) {
 async function getGameList() {
   const cacheFile = path.join("cache", "game_list.json");
 
-  // Check if cache exists and is not older than 24 hours
-  if (fs.existsSync(cacheFile)) {
-    const stats = fs.statSync(cacheFile);
-    const age = Date.now() - stats.mtimeMs;
-    if (age < 24 * 60 * 60 * 1000) {
-      return JSON.parse(fs.readFileSync(cacheFile, "utf-8"));
-    }
-  }
-
   return fetch(
     "https://api.github.com/search/repositories?q=topic:arga-game-production",
     {
@@ -106,7 +97,11 @@ async function getGameList() {
       log("Error fetching game list from GitHub:", "fgWhite", "bgRed");
       log(error, "fgWhite", "bgRed");
       log("Loading games from cache...", "fgWhite", "bgRed");
-      return JSON.parse(fs.readFileSync(cacheFile, "utf-8"));
+      return JSON.parse(fs.readFileSync(cacheFile, "utf-8")).then(
+        (gameList) => {
+          return gameList;
+        }
+      );
     });
 }
 
