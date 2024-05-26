@@ -504,7 +504,6 @@ class GameEngine {
   }
 
   async save(namse) {
-    const game = this.game;
     const player = this.player;
     const lm = this.lm;
     const history = this.history;
@@ -514,14 +513,12 @@ class GameEngine {
       return value;
     };
 
-    const data = JSON.stringify({ game, player, lm, history }, replacer);
+    const data = JSON.stringify({ player, lm, history }, replacer);
     if (namse) {
-      await fs.writeFileSync(`save/${namse}.json`, data);
-      return this.gameLoop();
+      fs.writeFileSync(`save/${namse}.json`, data);
     } else {
       rl.question("Enter the name for the save file: ", async (name) => {
-        await fs.writeFileSync(`save/${name}.json`, data);
-        return this.gameLoop();
+        fs.writeFileSync(`save/${name}.json`, data);
       });
     }
     log("Game saved.", "fgGreen");
@@ -537,15 +534,13 @@ class GameEngine {
     } else {
       try {
         const data = fs.readFileSync(`save/${save}.json`, "utf8");
-        let { game, player, lm, history } = JSON.parse(data);
+        let { player, lm, history } = JSON.parse(data);
 
         // Fix corrupt JSON data
-        game = game || {};
         player = player || {};
         lm = lm || {};
         history = history || [];
 
-        this.game = game;
         this.player.location = player.location;
         this.player.inventory = player.inventory;
 
