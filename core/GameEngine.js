@@ -1,3 +1,5 @@
+const { createRequire } = require("node:module");
+DynamicReq = createRequire(__filename);
 const fs = require("fs");
 const PlayerManager = require("./PlayerManager");
 const LocationManager = require("./LocationManager");
