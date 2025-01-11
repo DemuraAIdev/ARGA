@@ -224,6 +224,8 @@ class GameEngine {
   // game loop
   gameLoop(rl) {
     rl.question(`${this.lm.name}> `, (input) => {
+      // Add the input to the history
+      this.history.push(input);
       this.handleInput(input);
       this.gameLoop();
     });
