@@ -62,10 +62,6 @@ class GameEngine {
       // set time
       this.time.start(this.config.time.start);
 
-      this.game.lmC = this.lm;
-      this.game.playerC = this.player;
-      this.game.timeC = this.time;
-
       log(this.time.getCurrentTime(), "fgGreen");
 
       // Display the welcome message
@@ -268,6 +264,10 @@ class GameEngine {
     if (itemIndexGame.canSearch?.search) {
       this.search(item);
     }
+
+    if (itemIndexGame.canRead?.read) {
+      this.read(item);
+    }
   }
 
   take(items) {
@@ -325,12 +325,25 @@ class GameEngine {
         log(`You didn't find anything`, "fgYellow");
       } else {
         log(`You find :`, "fgYellow");
-        this.arraytoList(items);
+        // list and state
+        for (let item of items) {
+          const state = this.game.item.find((itemGame) => itemGame.id === item)
+            .state
+            ? `(${
+                this.game.item.find((itemGame) => itemGame.id === item).state
+              })`
+            : "";
+          log(`- ${item} ${state}`, "fgYellow");
+        }
         this.lm.addItemsToLocation(items);
       }
     }
 
     canSearch.search = false;
+
+    // change state from closed to open
+    itemIndexGame.state = "searched";
+
     canSearch.errorMessage =
       canSearch.errorMessage || `You already searched the ${item}`;
   }
@@ -506,16 +519,13 @@ class GameEngine {
   }
 
   async save(namse) {
-    const player = this.player;
-    const lm = this.lm;
-    const history = this.history;
-
     const replacer = (key, value) => {
-      if (key === "engine") return undefined;
+      if (key === "engine" || key === "interval") return undefined;
+
       return value;
     };
 
-    const data = JSON.stringify({ player, lm, history }, replacer);
+    const data = JSON.stringify(this, replacer);
     if (namse) {
       fs.writeFileSync(`save/${namse}.json`, data);
     } else {
@@ -536,28 +546,19 @@ class GameEngine {
     } else {
       try {
         const data = fs.readFileSync(`save/${save}.json`, "utf8");
-        let { player, lm, history } = JSON.parse(data);
+        const saveData = JSON.parse(data);
+        // this.lm = saveData.lm;
+        this.game = saveData.game;
+        Object.assign(this.lm, saveData.lm);
+        // this.player = saveData.player;
+        Object.assign(this.player, saveData.player);
+        // this.time = saveData.time;
+        Object.assign(this.time, saveData.time);
+        this.history = saveData.history;
 
-        // Fix corrupt JSON data
-        player = player || {};
-        lm = lm || {};
-        history = history || [];
-
-        this.player.location = player.location;
-        this.player.inventory = player.inventory;
-
-        this.lm.locations = lm.locations;
-        this.lm.id = lm.id;
-        this.lm.name = lm.name;
-        this.lm.description = lm.description;
-        this.lm.items = lm.items;
-
-        // load history
-        this.history = history;
         for (let hist of this.history) {
           console.log(hist);
         }
-
         log("Game loaded.", "fgGreen");
         return this.gameLoop();
       } catch (error) {
