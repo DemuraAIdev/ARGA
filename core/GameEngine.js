@@ -1,9 +1,8 @@
-const { createRequire } = require("node:module");
-DynamicReq = createRequire(__filename);
 const fs = require("fs");
 const PlayerManager = require("./PlayerManager");
 const LocationManager = require("./LocationManager");
 const TimeManager = require("./TimeManager");
+const readline = require("readline");
 const {
   log,
   history,
@@ -18,6 +17,10 @@ class GameEngine {
     this.player = new PlayerManager(this);
     this.lm = new LocationManager(this);
     this.config = null;
+    this.rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
     this.history = history;
     this.time = new TimeManager();
   }
@@ -134,6 +137,15 @@ class GameEngine {
     });
 
     if (event && !event.happen) {
+      if (event.location && event.trigger.location !== this.player.location) {
+        log("You can't do that here.", "fgRed");
+        return;
+      }
+      if (!this.lm.itemExistInLocation(event.trigger.object)) {
+        log(`You can't find the ${event.trigger.object}`, "fgRed");
+        return;
+      }
+
       if (event.movePlayer) {
         this.movePlayer(event.movePlayer);
       }
@@ -222,10 +234,8 @@ class GameEngine {
   }
 
   // game loop
-  gameLoop(rl) {
-    rl.question(`${this.lm.name}> `, (input) => {
-      // Add the input to the history
-      this.history.push(input);
+  gameLoop() {
+    this.rl.question(`${this.lm.name}> `, (input) => {
       this.handleInput(input);
       this.gameLoop();
     });

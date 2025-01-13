@@ -14,10 +14,7 @@ const { exec } = require("child_process");
   }
 });
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
+const rl = game.rl;
 
 // Function to list all games in the "game" folder
 function listGames() {
@@ -244,13 +241,6 @@ function updateAllGames() {
     })
   );
 }
-
-game.gameLoop = function () {
-  rl.question(`${this.lm.name}> `, (input) => {
-    this.handleInput(input);
-    this.gameLoop();
-  });
-};
 
 process.on("uncaughtException", (err) => {
   log("Game Engine error:", "fgWhite", "bgRed");
