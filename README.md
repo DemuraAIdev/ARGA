@@ -30,3 +30,8 @@ npm run build
 ```
 
 This will create an executable file named arga.exe that you can run to play the game without needing to have Node.js installed.
+
+review by WebProgrammingUNPAS :
+https://youtube.com/live/kpdUwWx53cE?feature=share
+
+Timestamp 39:48
